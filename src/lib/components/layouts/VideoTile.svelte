@@ -51,10 +51,9 @@
 <button
 	type="button"
 	class={cn(
-		'relative aspect-video overflow-hidden rounded-[1.75rem] bg-muted text-left transition',
-		isSpeaking && 'ring-2 ring-success shadow-[0_0_0_6px_rgba(45,147,108,0.12)]',
-		isPinned && 'ring-2 ring-primary shadow-[0_0_0_6px_rgba(255,107,53,0.12)]',
-		onPin && 'hover:-translate-y-0.5',
+		'relative aspect-video overflow-hidden rounded-xl bg-muted text-left transition-shadow',
+		isSpeaking && 'ring-2 ring-green-500 shadow-[0_0_12px_rgba(34,197,94,0.3)]',
+		isPinned && 'ring-2 ring-primary',
 		className
 	)}
 	onclick={() => onPin?.()}
@@ -69,22 +68,14 @@
 
 	{#if cameraOff}
 		<div class="absolute inset-0 flex items-center justify-center">
-			<div class="flex size-20 items-center justify-center rounded-full bg-black/10 text-3xl font-black text-muted-foreground">
+			<div class="flex h-16 w-16 items-center justify-center rounded-full bg-muted-foreground/20 text-2xl font-semibold text-muted-foreground">
 				{label.charAt(0).toUpperCase()}
 			</div>
 		</div>
 	{/if}
 
-	<div class="absolute inset-x-0 bottom-0 flex items-end justify-between bg-gradient-to-t from-black/65 via-black/10 to-transparent p-3">
-		<div class="grid gap-1">
-			<span class="text-sm font-semibold text-white">{label}</span>
-			{#if onPin}
-				<span class="text-[11px] uppercase tracking-[0.2em] text-white/70">
-					{isPinned ? 'Pinned' : 'Pin'}
-				</span>
-			{/if}
-		</div>
-
+	<div class="absolute bottom-2 left-2 flex items-center gap-1.5">
+		<span class="rounded-md bg-black/60 px-2 py-1 text-xs text-white">{label}</span>
 		{#if qualityClass}
 			<span class={`size-3 rounded-full ${qualityClass}`} title={`Connection: ${networkQuality}`}></span>
 		{/if}

@@ -38,25 +38,27 @@
 	}
 </script>
 
-<div class="glass-card surface-border flex h-full flex-col rounded-[1.75rem]">
+<div class="flex h-full flex-col border-l border-border bg-card">
 	<div class="border-b border-border px-4 py-3">
 		<h3 class="text-sm font-semibold text-foreground">Chat</h3>
 	</div>
 
-	<div bind:this={scroller} class="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+	<div bind:this={scroller} class="flex-1 overflow-y-auto px-4 py-3">
 		{#if $chat.messages.length === 0}
-			<p class="text-center text-xs text-muted-foreground">No messages yet.</p>
+			<p class="text-center text-xs text-muted-foreground">No messages yet</p>
 		{:else}
-			{#each $chat.messages as message (message.id)}
-				<div class={message.fromId === $connection.userId ? 'text-right' : 'text-left'}>
-					<div class="text-xs text-muted-foreground">
-						{message.fromId === $connection.userId ? 'You' : message.displayName} · {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+			<div class="grid gap-3">
+				{#each $chat.messages as message (message.id)}
+					<div class={message.fromId === $connection.userId ? 'text-right' : 'text-left'}>
+						<div class="text-xs text-muted-foreground">
+							{message.fromId === $connection.userId ? 'You' : message.displayName} · {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+						</div>
+						<div class={`mt-0.5 inline-block rounded-lg px-3 py-1.5 text-sm ${message.fromId === $connection.userId ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'}`}>
+							{message.text}
+						</div>
 					</div>
-					<div class={`mt-1 inline-block max-w-full rounded-2xl px-3 py-2 text-sm ${message.fromId === $connection.userId ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'}`}>
-						{message.text}
-					</div>
-				</div>
-			{/each}
+				{/each}
+			</div>
 		{/if}
 	</div>
 
@@ -64,10 +66,10 @@
 		<div class="flex gap-2">
 			<input
 				bind:value={text}
-				class="min-w-0 flex-1 rounded-2xl border border-input bg-card px-4 py-3 outline-none focus:border-primary"
+				class="min-w-0 flex-1 rounded-md border border-input bg-background px-3 py-2 outline-none focus:border-primary"
 				placeholder="Send a message..."
 			/>
-			<button type="submit" class="rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-50" disabled={!text.trim()}>
+			<button type="submit" class="shrink-0 rounded-md bg-primary px-3 py-2 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/85 disabled:opacity-50" disabled={!text.trim()}>
 				Send
 			</button>
 		</div>

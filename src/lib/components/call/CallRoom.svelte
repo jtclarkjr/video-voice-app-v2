@@ -165,17 +165,17 @@
 </script>
 
 {#if error}
-	<div class="glass-card surface-border grid min-h-[60vh] place-items-center rounded-[2rem] p-8 text-center">
+	<div class="flex min-h-[60vh] items-center justify-center">
 		<div class="grid gap-4">
 			<p class="text-lg text-destructive">{error}</p>
-			<a href="/" class="text-sm font-semibold text-primary">Back to lobby</a>
+			<a href="/" class="text-sm text-primary underline">Back to lobby</a>
 		</div>
 	</div>
 {:else}
 	<div class="grid gap-4">
 		<ConnectionBanner />
 
-		<div class="flex items-center justify-between gap-4">
+		<div class="flex items-center justify-between">
 			<h2 class="text-lg font-semibold text-foreground">Room: {roomId}</h2>
 			<span class="text-sm text-muted-foreground">
 				{Object.keys($participants).length + 1} participant{Object.keys($participants).length === 0 ? '' : 's'}
