@@ -1,0 +1,171 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: #f4efe7;
+  --background-alt: #fff9f1;
+  --foreground: #171412;
+  --card: rgba(255, 250, 242, 0.82);
+  --card-strong: rgba(255, 248, 238, 0.96);
+  --card-foreground: #171412;
+  --popover: #fff8f0;
+  --popover-foreground: #171412;
+  --primary: #ff6b35;
+  --primary-foreground: #fff4ee;
+  --secondary: #f4ded0;
+  --secondary-foreground: #2e211c;
+  --muted: #eaded2;
+  --muted-foreground: #6e584d;
+  --accent: #ffd166;
+  --accent-foreground: #2f231a;
+  --border: rgba(82, 57, 45, 0.14);
+  --input: rgba(82, 57, 45, 0.12);
+  --ring: rgba(255, 107, 53, 0.28);
+  --destructive: #cf3b2d;
+  --destructive-foreground: #fff6f3;
+  --success: #2d936c;
+}
+
+.dark {
+  --background: #161312;
+  --background-alt: #1d1715;
+  --foreground: #f7ede7;
+  --card: rgba(31, 24, 21, 0.82);
+  --card-strong: rgba(35, 28, 24, 0.94);
+  --card-foreground: #f7ede7;
+  --popover: #211916;
+  --popover-foreground: #f7ede7;
+  --primary: #ff8a5b;
+  --primary-foreground: #241712;
+  --secondary: #312520;
+  --secondary-foreground: #f7ede7;
+  --muted: #2a211e;
+  --muted-foreground: #baa59a;
+  --accent: #ffd166;
+  --accent-foreground: #2b2017;
+  --border: rgba(255, 237, 231, 0.12);
+  --input: rgba(255, 237, 231, 0.11);
+  --ring: rgba(255, 138, 91, 0.3);
+  --destructive: #ff7163;
+  --destructive-foreground: #250f0d;
+  --success: #65c59b;
+}
+
+@theme inline {
+  --font-sans: 'Avenir Next', 'Nunito Sans', 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SFMono-Regular', monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --radius: 1.4rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    color-scheme: light;
+  }
+
+  .dark {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply min-w-80 bg-background font-sans text-foreground antialiased;
+    background:
+      radial-gradient(
+        circle at top left,
+        rgb(255 107 53 / 16%),
+        transparent 24%
+      ),
+      radial-gradient(
+        circle at top right,
+        rgb(255 209 102 / 12%),
+        transparent 28%
+      ),
+      linear-gradient(
+        180deg,
+        var(--background-alt) 0%,
+        var(--background) 58%,
+        #fff 100%
+      );
+  }
+
+  .dark body {
+    background:
+      radial-gradient(
+        circle at top left,
+        rgb(255 138 91 / 14%),
+        transparent 22%
+      ),
+      radial-gradient(
+        circle at top right,
+        rgb(255 209 102 / 10%),
+        transparent 26%
+      ),
+      linear-gradient(180deg, #1e1715 0%, var(--background) 55%, #120f0e 100%);
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.35;
+    background-image:
+      linear-gradient(rgb(23 20 18 / 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(23 20 18 / 0.02) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  a {
+    @apply text-inherit no-underline;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  code {
+    @apply rounded-md px-1.5 py-0.5 text-[0.95em];
+    background: color-mix(in srgb, var(--primary) 10%, transparent);
+  }
+}
+
+@layer utilities {
+  .glass-card {
+    background: linear-gradient(180deg, var(--card-strong), var(--card));
+    box-shadow:
+      0 18px 40px rgb(23 20 18 / 0.08),
+      inset 0 1px 0 rgb(255 255 255 / 0.25);
+    backdrop-filter: blur(18px);
+  }
+
+  .surface-border {
+    border: 1px solid var(--border);
+  }
+}
