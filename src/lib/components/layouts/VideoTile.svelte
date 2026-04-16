@@ -51,7 +51,7 @@
 <button
 	type="button"
 	class={cn(
-		'relative aspect-video overflow-hidden rounded-xl bg-muted text-left transition-shadow',
+		'block w-full relative aspect-video overflow-hidden rounded-xl bg-muted text-left transition-shadow',
 		isSpeaking && 'ring-2 ring-green-500 shadow-[0_0_12px_rgba(34,197,94,0.3)]',
 		isPinned && 'ring-2 ring-primary',
 		className

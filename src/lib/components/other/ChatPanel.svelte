@@ -43,7 +43,7 @@
 		<h3 class="text-sm font-semibold text-foreground">Chat</h3>
 	</div>
 
-	<div bind:this={scroller} class="flex-1 overflow-y-auto px-4 py-3">
+	<div bind:this={scroller} class="min-h-0 flex-1 overflow-y-auto px-4 py-3">
 		{#if $chat.messages.length === 0}
 			<p class="text-center text-xs text-muted-foreground">No messages yet</p>
 		{:else}

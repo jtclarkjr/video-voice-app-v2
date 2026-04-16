@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
+	import { tick } from 'svelte';
 	import CallControls from '$lib/components/call/CallControls.svelte';
 	import LayoutContainer from '$lib/components/layouts/LayoutContainer.svelte';
 	import ChatPanel from '$lib/components/other/ChatPanel.svelte';
@@ -14,7 +15,7 @@
 	import { connection, setConnected, setConnectionPhase, setDisconnected } from '$lib/stores/connection';
 	import { layout, resetLayout } from '$lib/stores/layout';
 	import { enumerateDevices, media, resetMedia, setCameraEnabled, setLocalStream, setMicEnabled } from '$lib/stores/media';
-	import { resetScreenShare } from '$lib/stores/screen-share';
+	import { resetScreenShare, screenShare } from '$lib/stores/screen-share';
 	import { closeAll, closePeerConnection } from '$lib/webrtc/cleanup';
 	import { createOffer, handleAnswer, handleIceCandidate, handleOffer } from '$lib/webrtc/negotiation';
 	import { markPeerScreenSharing } from '$lib/webrtc/screen-share-tracks';
@@ -34,6 +35,8 @@
 	}>();
 
 	let error = $state<string | null>(null);
+	let layoutHost = $state<HTMLDivElement | null>(null);
+	let sidePanelHeight = $state<number | null>(null);
 
 	onMount(() => {
 		let destroyed = false;
@@ -162,6 +165,46 @@
 		resetScreenShare();
 		void goto('/');
 	}
+
+	$effect(() => {
+		const panelDeps = {
+			mode: $layout.mode,
+			chatOpen: $layout.chatOpen,
+			rosterOpen: $layout.rosterOpen,
+			screenShareActive: $screenShare.localActive,
+			participantCount: Object.keys($participants).length,
+			localStream: $media.localStream
+		};
+		void panelDeps;
+
+		let observer: ResizeObserver | null = null;
+		let cancelled = false;
+
+		void tick().then(() => {
+			if (cancelled || !layoutHost) {
+				return;
+			}
+
+			const primaryFrame = layoutHost.querySelector('[data-primary-call-frame]') as HTMLElement | null;
+			if (!primaryFrame) {
+				sidePanelHeight = null;
+				return;
+			}
+
+			const syncHeight = () => {
+				sidePanelHeight = primaryFrame.getBoundingClientRect().height;
+			};
+
+			syncHeight();
+			observer = new ResizeObserver(syncHeight);
+			observer.observe(primaryFrame);
+		});
+
+		return () => {
+			cancelled = true;
+			observer?.disconnect();
+		};
+	});
 </script>
 
 {#if error}
@@ -182,8 +225,8 @@
 			</span>
 		</div>
 
-		<div class="flex gap-4">
-			<div class="min-w-0 flex-1">
+		<div class="flex items-start gap-4">
+			<div bind:this={layoutHost} class="min-w-0 flex-1">
 				<LayoutContainer
 					localStream={$media.localStream}
 					participants={$participants}
@@ -194,11 +237,11 @@
 			</div>
 
 			{#if $layout.chatOpen}
-				<div class="w-80 shrink-0">
+				<div class="w-80 shrink-0 self-start overflow-hidden" style:height={sidePanelHeight ? `${sidePanelHeight}px` : undefined}>
 					<ChatPanel />
 				</div>
 			{:else if $layout.rosterOpen}
-				<div class="w-80 shrink-0">
+				<div class="w-80 shrink-0 self-start overflow-hidden" style:height={sidePanelHeight ? `${sidePanelHeight}px` : undefined}>
 					<ParticipantRoster localDisplayName={displayName} />
 				</div>
 			{/if}

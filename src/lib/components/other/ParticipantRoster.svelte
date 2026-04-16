@@ -12,7 +12,7 @@
 		<h3 class="text-sm font-semibold text-foreground">Participants ({remoteList.length + 1})</h3>
 	</div>
 
-	<div class="flex-1 overflow-y-auto px-2 py-2">
+	<div class="min-h-0 flex-1 overflow-y-auto px-2 py-2">
 		<div class="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-accent/50">
 			<div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
 				{localDisplayName.charAt(0).toUpperCase()}

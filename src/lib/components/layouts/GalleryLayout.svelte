@@ -37,14 +37,16 @@
 </script>
 
 <div class={`grid gap-3 ${cols}`}>
-	<VideoTile
-		stream={localStream}
-		label={localDisplayName}
-		muted
-		mirrored
-		cameraOff={!isCameraOn}
-		isSpeaking={localSpeaking}
-	/>
+	<div data-primary-call-frame>
+		<VideoTile
+			stream={localStream}
+			label={localDisplayName}
+			muted
+			mirrored
+			cameraOff={!isCameraOn}
+			isSpeaking={localSpeaking}
+		/>
+	</div>
 	{#each remoteParticipants as participant (participant.id)}
 		<VideoTile
 			stream={participant.stream}
