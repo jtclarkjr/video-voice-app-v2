@@ -1,4 +1,19 @@
 <script lang="ts">
+	import {
+		ChevronDown,
+		Grid2x2,
+		LayoutPanelTop,
+		MessageCircle,
+		Mic,
+		MicOff,
+		MonitorUp,
+		MonitorX,
+		PhoneOff,
+		Settings,
+		Users,
+		Video,
+		VideoOff
+	} from 'lucide-svelte';
 	import Popover from '$lib/components/shared/Popover.svelte';
 	import VoiceVideoSettingsDialog from '$lib/components/settings/VoiceVideoSettingsDialog.svelte';
 	import { chat } from '$lib/stores/chat.svelte';
@@ -50,20 +65,9 @@
 			aria-label={media.isMicOn ? 'Mute' : 'Unmute'}
 		>
 			{#if media.isMicOn}
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true">
-					<path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-					<path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-					<line x1="12" x2="12" y1="19" y2="22" />
-				</svg>
+				<Mic class="h-5 w-5" aria-hidden="true" />
 			{:else}
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true">
-					<line x1="2" x2="22" y1="2" y2="22" />
-					<path d="M18.89 13.23A7.12 7.12 0 0 0 19 12v-2" />
-					<path d="M5 10v2a7 7 0 0 0 12 5.29" />
-					<path d="M15 9.34V5a3 3 0 0 0-5.68-1.33" />
-					<path d="M9 9v3a3 3 0 0 0 5.12 2.12" />
-					<line x1="12" x2="12" y1="19" y2="22" />
-				</svg>
+				<MicOff class="h-5 w-5" aria-hidden="true" />
 			{/if}
 		</button>
 
@@ -75,9 +79,7 @@
 					onclick={() => (micPopoverOpen = !micPopoverOpen)}
 					aria-label="Audio settings"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-3 w-3" aria-hidden="true">
-						<path d="m6 9 6 6 6-6" />
-					</svg>
+					<ChevronDown class="h-3 w-3" aria-hidden="true" />
 				</button>
 			{/snippet}
 
@@ -232,16 +234,9 @@
 			aria-label={media.isCameraOn ? 'Turn off camera' : 'Turn on camera'}
 		>
 			{#if media.isCameraOn}
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true">
-					<path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5" />
-					<rect x="2" y="6" width="14" height="12" rx="2" />
-				</svg>
+				<Video class="h-5 w-5" aria-hidden="true" />
 			{:else}
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true">
-					<path d="M10.66 6H14a2 2 0 0 1 2 2v2.5l5.248-3.062A.5.5 0 0 1 22 7.87v8.196" />
-					<path d="M16 16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2" />
-					<line x1="2" x2="22" y1="2" y2="22" />
-				</svg>
+				<VideoOff class="h-5 w-5" aria-hidden="true" />
 			{/if}
 		</button>
 
@@ -253,9 +248,7 @@
 					onclick={() => (cameraPopoverOpen = !cameraPopoverOpen)}
 					aria-label="Video settings"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-3 w-3" aria-hidden="true">
-						<path d="m6 9 6 6 6-6" />
-					</svg>
+					<ChevronDown class="h-3 w-3" aria-hidden="true" />
 				</button>
 			{/snippet}
 
@@ -317,10 +310,7 @@
 						onclick={openSettings}
 					>
 						<span class="text-sm font-semibold text-foreground">Video Settings</span>
-						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-muted-foreground" aria-hidden="true">
-							<circle cx="12" cy="12" r="3" />
-							<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 8.92 4.6H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c0 .66.39 1.26 1 1.51H21a2 2 0 0 1 0 4h-.09c-.61.25-1 .85-1 1.49Z" />
-						</svg>
+						<Settings class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
 					</button>
 				</div>
 			{/snippet}
@@ -338,22 +328,9 @@
 		aria-label={screenShare.localActive ? 'Stop sharing' : 'Share screen'}
 	>
 		{#if screenShare.localActive}
-			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true">
-				<path d="M13 3H4a2 2 0 0 0-2 2v6" />
-				<path d="M22 8V5a2 2 0 0 0-2-2h-3" />
-				<path d="M2 17v2a2 2 0 0 0 2 2h6" />
-				<path d="M17 22h3a2 2 0 0 0 2-2v-3" />
-				<path d="m2 2 20 20" />
-				<path d="M7 7h8v6" />
-			</svg>
+			<MonitorX class="h-5 w-5" aria-hidden="true" />
 		{:else}
-			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true">
-				<path d="M13 3H4a2 2 0 0 0-2 2v6" />
-				<path d="M22 8V5a2 2 0 0 0-2-2h-3" />
-				<path d="M2 17v2a2 2 0 0 0 2 2h6" />
-				<path d="M17 22h3a2 2 0 0 0 2-2v-3" />
-				<path d="M7 7h10v10" />
-			</svg>
+			<MonitorUp class="h-5 w-5" aria-hidden="true" />
 		{/if}
 	</button>
 
@@ -368,9 +345,7 @@
 			onclick={() => layout.toggleChat()}
 			aria-label="Toggle chat"
 		>
-			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true">
-				<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
-			</svg>
+			<MessageCircle class="h-5 w-5" aria-hidden="true" />
 		</button>
 
 		{#if chat.unreadCount > 0}
@@ -390,12 +365,7 @@
 		onclick={() => layout.toggleRoster()}
 		aria-label="Toggle participants"
 	>
-		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true">
-			<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-			<circle cx="9" cy="7" r="4" />
-			<path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-			<path d="M16 3.13a4 4 0 0 1 0 7.75" />
-		</svg>
+		<Users class="h-5 w-5" aria-hidden="true" />
 	</button>
 
 	<button
@@ -405,20 +375,9 @@
 		aria-label={layout.mode === 'gallery' ? 'Speaker view' : 'Gallery view'}
 	>
 		{#if layout.mode === 'gallery'}
-			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true">
-				<rect x="3" y="4" width="18" height="8" rx="2" />
-				<path d="M5 20h6" />
-				<path d="M13 20h6" />
-				<path d="M5 16h6" />
-				<path d="M13 16h6" />
-			</svg>
+			<LayoutPanelTop class="h-5 w-5" aria-hidden="true" />
 		{:else}
-			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true">
-				<rect x="3" y="3" width="7" height="7" rx="1" />
-				<rect x="14" y="3" width="7" height="7" rx="1" />
-				<rect x="14" y="14" width="7" height="7" rx="1" />
-				<rect x="3" y="14" width="7" height="7" rx="1" />
-			</svg>
+			<Grid2x2 class="h-5 w-5" aria-hidden="true" />
 		{/if}
 	</button>
 
@@ -428,9 +387,6 @@
 		onclick={onLeave}
 		aria-label="Leave call"
 	>
-		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-destructive-foreground" aria-hidden="true">
-			<path d="M10.76 5.23a16 16 0 0 0-7 5.5 2.1 2.1 0 0 0 .23 2.62l2 2a2 2 0 0 0 2.67.12l2.1-1.68a16 16 0 0 1 2.48 2.48l-1.68 2.1a2 2 0 0 0 .12 2.67l2 2a2.1 2.1 0 0 0 2.62.23 16 16 0 0 0 5.5-7" />
-			<path d="m2 2 20 20" />
-		</svg>
+		<PhoneOff class="h-5 w-5 text-destructive-foreground" aria-hidden="true" />
 	</button>
 </div>
