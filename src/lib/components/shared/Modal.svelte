@@ -4,12 +4,14 @@
 	let {
 		open = false,
 		title = '',
+		eyebrow = 'Panel',
 		widthClass = 'max-w-lg',
 		onClose = () => {},
 		children
 	} = $props<{
 		open?: boolean;
 		title?: string;
+		eyebrow?: string;
 		widthClass?: string;
 		onClose?: () => void;
 		children?: () => unknown;
@@ -57,7 +59,9 @@
 		>
 			<div class="mb-5 flex items-start justify-between gap-4">
 				<div class="grid gap-1">
-					<p class="text-xs font-black uppercase tracking-[0.24em] text-primary">Panel</p>
+					{#if eyebrow}
+						<p class="text-xs font-black uppercase tracking-[0.24em] text-primary">{eyebrow}</p>
+					{/if}
 					<h2 class="text-2xl font-bold text-foreground">{title}</h2>
 				</div>
 				<button

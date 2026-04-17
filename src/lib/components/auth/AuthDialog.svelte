@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Modal from '$lib/components/shared/Modal.svelte';
+	import PlatformIcons from '$lib/components/shared/PlatformIcons.svelte';
 	import { signInWithEmail, signInWithOAuth, signUpWithEmail } from '$lib/auth/session-service';
 	import type { AuthConfig } from '$lib/server/auth-config';
 
@@ -103,7 +104,7 @@
 	);
 </script>
 
-<Modal open={open} onClose={onClose} title="Access Control" widthClass="max-w-md">
+<Modal open={open} onClose={onClose} title="Sign in" eyebrow="" widthClass="max-w-md">
 	{#if !authConfig.configured}
 		<p class="text-sm text-muted-foreground">
 			Supabase auth is not configured for this environment.
@@ -113,18 +114,33 @@
 			{#if showSso}
 				<div class="grid gap-2">
 					{#if authConfig.providers.github}
-						<button class="rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold transition hover:bg-secondary" onclick={() => void handleSso('github')} disabled={isSubmitting}>
-							Continue with GitHub
+						<button
+							class="flex items-center justify-center gap-2.5 rounded-xl border border-border/80 bg-card/70 px-4 py-3 text-sm font-medium text-foreground transition hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60"
+							onclick={() => void handleSso('github')}
+							disabled={isSubmitting}
+						>
+							<PlatformIcons provider="github" size="sm" />
+							<span>Continue with GitHub</span>
 						</button>
 					{/if}
 					{#if authConfig.providers.google}
-						<button class="rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold transition hover:bg-secondary" onclick={() => void handleSso('google')} disabled={isSubmitting}>
-							Continue with Google
+						<button
+							class="flex items-center justify-center gap-2.5 rounded-xl border border-border/80 bg-card/70 px-4 py-3 text-sm font-medium text-foreground transition hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60"
+							onclick={() => void handleSso('google')}
+							disabled={isSubmitting}
+						>
+							<PlatformIcons provider="google" size="sm" />
+							<span>Continue with Google</span>
 						</button>
 					{/if}
 					{#if authConfig.providers.apple}
-						<button class="rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold transition hover:bg-secondary" onclick={() => void handleSso('apple')} disabled={isSubmitting}>
-							Continue with Apple
+						<button
+							class="flex items-center justify-center gap-2.5 rounded-xl border border-border/80 bg-card/70 px-4 py-3 text-sm font-medium text-foreground transition hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60"
+							onclick={() => void handleSso('apple')}
+							disabled={isSubmitting}
+						>
+							<PlatformIcons provider="apple" size="sm" />
+							<span>Continue with Apple</span>
 						</button>
 					{/if}
 				</div>
@@ -132,9 +148,9 @@
 
 			{#if showSso && showEmail}
 				<div class="flex items-center gap-3">
-					<div class="h-px flex-1 bg-border"></div>
-					<span class="text-xs uppercase tracking-[0.2em] text-muted-foreground">or</span>
-					<div class="h-px flex-1 bg-border"></div>
+					<div class="h-px flex-1 bg-border/70"></div>
+					<span class="text-xs text-muted-foreground">or</span>
+					<div class="h-px flex-1 bg-border/70"></div>
 				</div>
 			{/if}
 
