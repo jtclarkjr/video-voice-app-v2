@@ -1,7 +1,6 @@
-import { get } from 'svelte/store'
 import { getAccessToken } from '$lib/auth/session-service'
-import { resetReconnectAttempts } from '$lib/stores/connection'
-import { media } from '$lib/stores/media'
+import { connection } from '$lib/stores/connection.svelte'
+import { media } from '$lib/stores/media.svelte'
 import type { SignalHandlers, SignalMessage } from '$lib/signaling/types'
 import { cancelReconnect, scheduleReconnect } from '$lib/signaling/reconnect'
 
@@ -54,15 +53,14 @@ function createConnection(
     ws = socket
 
     socket.onopen = () => {
-      resetReconnectAttempts()
-      const currentMedia = get(media)
+      connection.resetReconnectAttempts()
       send({
         type: 'join',
         roomId,
         displayName,
         authToken: authToken ?? undefined,
-        audioEnabled: currentMedia.isMicOn,
-        videoEnabled: currentMedia.isCameraOn
+        audioEnabled: media.isMicOn,
+        videoEnabled: media.isCameraOn
       })
     }
 

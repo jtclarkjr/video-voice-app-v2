@@ -1,7 +1,7 @@
-<script lang="ts">
+	<script lang="ts">
 	import { onMount } from 'svelte';
 	import { createActiveRoomsEventSource, fetchActiveRooms } from '$lib/rooms/client';
-	import { session } from '$lib/stores/session';
+	import { session } from '$lib/stores/session.svelte';
 	import type { RoomInfo } from '$lib/rooms/client';
 
 	let rooms = $state<RoomInfo[]>([]);
@@ -57,14 +57,14 @@
 			<div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 				<div class="grid gap-1">
 					<h2 class="m-0 text-lg font-semibold">Active Rooms</h2>
-					{#if !$session.isPending && $session.isAnonymous}
+					{#if !session.isPending && session.isAnonymous}
 						<p class="m-0 text-sm text-muted-foreground">
 							Sign in from the header to create a room.
 						</p>
 					{/if}
 				</div>
 
-				{#if !$session.isAnonymous}
+				{#if !session.isAnonymous}
 					<a
 						href="/call/new"
 						class="inline-flex items-center gap-2 self-start rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"

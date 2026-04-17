@@ -25,9 +25,9 @@ describe('pending join store', () => {
   })
 
   it('persists and consumes a room-specific payload', async () => {
-    const pendingJoin = await import('$lib/stores/pending-join')
+    const { pendingJoin } = await import('$lib/stores/pending-join.svelte')
 
-    pendingJoin.savePendingJoin({
+    pendingJoin.save({
       roomId: 'room-1',
       displayName: 'Guest',
       isMicOn: true,
@@ -35,20 +35,20 @@ describe('pending join store', () => {
       createdAt: Date.now()
     })
 
-    expect(pendingJoin.consumePendingJoin('room-1')).toEqual({
+    expect(pendingJoin.consume('room-1')).toEqual({
       roomId: 'room-1',
       displayName: 'Guest',
       isMicOn: true,
       isCameraOn: false,
       createdAt: expect.any(Number)
     })
-    expect(pendingJoin.consumePendingJoin('room-1')).toBeNull()
+    expect(pendingJoin.consume('room-1')).toBeNull()
   })
 
   it('clears expired payloads', async () => {
-    const pendingJoin = await import('$lib/stores/pending-join')
+    const { pendingJoin } = await import('$lib/stores/pending-join.svelte')
 
-    pendingJoin.savePendingJoin({
+    pendingJoin.save({
       roomId: 'room-2',
       displayName: 'Guest',
       isMicOn: true,
@@ -56,6 +56,6 @@ describe('pending join store', () => {
       createdAt: Date.now() - 120_000
     })
 
-    expect(pendingJoin.consumePendingJoin('room-2')).toBeNull()
+    expect(pendingJoin.consume('room-2')).toBeNull()
   })
 })

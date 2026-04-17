@@ -1,10 +1,9 @@
 <script lang="ts">
-	import { get } from 'svelte/store';
 	import AuthDialog from '$lib/components/auth/AuthDialog.svelte';
 	import { getUserDisplayName, signOut } from '$lib/auth/session-service';
 	import type { AuthConfig } from '$lib/server/auth-config';
-	import { session } from '$lib/stores/session';
-	import { theme, type Theme } from '$lib/stores/theme';
+	import { session } from '$lib/stores/session.svelte';
+	import { theme, type Theme } from '$lib/stores/theme.svelte';
 	import Popover from '$lib/components/shared/Popover.svelte';
 
 	let { authConfig } = $props<{ authConfig: AuthConfig }>();
@@ -19,11 +18,11 @@
 	}
 
 	function displayName() {
-		return getUserDisplayName(get(session).data?.user ?? null);
+		return getUserDisplayName(session.data?.user ?? null);
 	}
 
 	function avatarUrl() {
-		const user = get(session).data?.user;
+		const user = session.data?.user;
 		const metadata = user?.user_metadata;
 		if (!metadata || typeof metadata !== 'object') {
 			return null;
@@ -43,12 +42,12 @@
 		<button
 			type="button"
 			class="flex size-10 items-center justify-center rounded-full border border-border/70 bg-card/80 shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
-			aria-label={$session.isAnonymous ? 'Open account menu' : `${displayName()} account menu`}
+			aria-label={session.isAnonymous ? 'Open account menu' : `${displayName()} account menu`}
 			onclick={() => (popoverOpen = !popoverOpen)}
 		>
-			{#if !$session.isAnonymous && avatarUrl()}
+			{#if !session.isAnonymous && avatarUrl()}
 				<img src={avatarUrl() ?? undefined} alt={displayName()} class="size-full rounded-full object-cover" />
-			{:else if $session.isAnonymous}
+			{:else if session.isAnonymous}
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					viewBox="0 0 24 24"
@@ -76,12 +75,12 @@
 		<div class="grid gap-4">
 			<div class="grid gap-1">
 				<p class="m-0 text-sm font-medium text-foreground">
-					{$session.isAnonymous ? 'Guest mode' : displayName()}
+					{session.isAnonymous ? 'Guest mode' : displayName()}
 				</p>
 				<p class="m-0 text-xs text-muted-foreground">
-					{$session.isAnonymous
+					{session.isAnonymous
 						? 'Sign in to create rooms and use your account profile.'
-						: ($session.data?.user?.email ?? 'Signed in')}
+						: (session.data?.user?.email ?? 'Signed in')}
 				</p>
 			</div>
 
@@ -94,13 +93,13 @@
 						<button
 							type="button"
 							class={`flex h-8 w-8 items-center justify-center rounded-full p-0 transition ${
-								$theme === option
+								theme.current === option
 									? 'bg-primary text-primary-foreground'
 									: 'text-muted-foreground hover:bg-accent hover:text-foreground'
 							}`}
 							onclick={() => setTheme(option)}
 							aria-label={`Use ${option} theme`}
-							aria-pressed={$theme === option}
+							aria-pressed={theme.current === option}
 							title={labelFor(option)}
 						>
 							{#if option === 'light'}
@@ -133,7 +132,7 @@
 
 			<div class="h-px bg-border/70"></div>
 
-			{#if $session.isAnonymous}
+			{#if session.isAnonymous}
 				<button
 					type="button"
 					class="inline-flex items-center justify-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"

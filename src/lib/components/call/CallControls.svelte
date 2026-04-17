@@ -1,20 +1,10 @@
 <script lang="ts">
 	import Popover from '$lib/components/shared/Popover.svelte';
 	import VoiceVideoSettingsDialog from '$lib/components/settings/VoiceVideoSettingsDialog.svelte';
-	import { chat } from '$lib/stores/chat';
-	import { layout, toggleChat, toggleLayoutMode, toggleRoster } from '$lib/stores/layout';
-	import {
-		media,
-		setInputVolume,
-		setOutputVolume,
-		setSelectedAudioInput,
-		setSelectedAudioOutput,
-		setSelectedVideoInput,
-		toggleCamera,
-		toggleDeafen,
-		toggleMic
-	} from '$lib/stores/media';
-	import { screenShare } from '$lib/stores/screen-share';
+	import { chat } from '$lib/stores/chat.svelte';
+	import { layout } from '$lib/stores/layout.svelte';
+	import { media } from '$lib/stores/media.svelte';
+	import { screenShare } from '$lib/stores/screen-share.svelte';
 	import { startScreenShare, stopScreenShare } from '$lib/screen-share';
 
 	let { onLeave = () => {} } = $props<{ onLeave?: () => void }>();
@@ -33,15 +23,15 @@
 	}
 
 	function currentInputLabel() {
-		return $media.audioInputs.find((device) => device.deviceId === $media.selectedAudioInput)?.label ?? 'Default';
+		return media.audioInputs.find((device) => device.deviceId === media.selectedAudioInput)?.label ?? 'Default';
 	}
 
 	function currentOutputLabel() {
-		return $media.audioOutputs.find((device) => device.deviceId === $media.selectedAudioOutput)?.label ?? 'Default';
+		return media.audioOutputs.find((device) => device.deviceId === media.selectedAudioOutput)?.label ?? 'Default';
 	}
 
 	function currentCameraLabel() {
-		return $media.videoInputs.find((device) => device.deviceId === $media.selectedVideoInput)?.label ?? 'Default';
+		return media.videoInputs.find((device) => device.deviceId === media.selectedVideoInput)?.label ?? 'Default';
 	}
 </script>
 
@@ -52,14 +42,14 @@
 		<button
 			type="button"
 			class={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
-				$media.isMicOn
+				media.isMicOn
 					? 'text-muted-foreground hover:bg-accent hover:text-foreground'
 					: 'bg-accent text-destructive'
 			}`}
-			onclick={toggleMic}
-			aria-label={$media.isMicOn ? 'Mute' : 'Unmute'}
+			onclick={() => media.toggleMic()}
+			aria-label={media.isMicOn ? 'Mute' : 'Unmute'}
 		>
-			{#if $media.isMicOn}
+			{#if media.isMicOn}
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true">
 					<path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
 					<path d="M19 10v2a7 7 0 0 1-14 0v-2" />
@@ -108,21 +98,21 @@
 					</button>
 					{#if showInputDevices}
 						<div class="ml-1 grid gap-0.5 border-l border-border pl-2">
-							{#each $media.audioInputs as device}
+							{#each media.audioInputs as device}
 								<button
 									type="button"
 									class={`flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-sm transition-colors ${
-										device.deviceId === $media.selectedAudioInput
+										device.deviceId === media.selectedAudioInput
 											? 'bg-accent text-foreground'
 											: 'text-muted-foreground hover:bg-accent hover:text-foreground'
 									}`}
 									onclick={() => {
-										setSelectedAudioInput(device.deviceId);
+										media.setSelectedAudioInput(device.deviceId);
 										showInputDevices = false;
 									}}
 								>
 									<span class="truncate">{device.label}</span>
-									{#if device.deviceId === $media.selectedAudioInput}
+									{#if device.deviceId === media.selectedAudioInput}
 										<span class="ml-2 text-xs text-[var(--success)]">✓</span>
 									{/if}
 								</button>
@@ -145,21 +135,21 @@
 					</button>
 					{#if showOutputDevices}
 						<div class="ml-1 grid gap-0.5 border-l border-border pl-2">
-							{#each $media.audioOutputs as device}
+							{#each media.audioOutputs as device}
 								<button
 									type="button"
 									class={`flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-sm transition-colors ${
-										device.deviceId === $media.selectedAudioOutput
+										device.deviceId === media.selectedAudioOutput
 											? 'bg-accent text-foreground'
 											: 'text-muted-foreground hover:bg-accent hover:text-foreground'
 									}`}
 									onclick={() => {
-										setSelectedAudioOutput(device.deviceId);
+										media.setSelectedAudioOutput(device.deviceId);
 										showOutputDevices = false;
 									}}
 								>
 									<span class="truncate">{device.label}</span>
-									{#if device.deviceId === $media.selectedAudioOutput}
+									{#if device.deviceId === media.selectedAudioOutput}
 										<span class="ml-2 text-xs text-[var(--success)]">✓</span>
 									{/if}
 								</button>
@@ -175,8 +165,8 @@
 							type="range"
 							min="0"
 							max="200"
-							value={$media.inputVolume}
-							oninput={(event) => setInputVolume(Number((event.currentTarget as HTMLInputElement).value))}
+							value={media.inputVolume}
+							oninput={(event) => media.setInputVolume(Number((event.currentTarget as HTMLInputElement).value))}
 							class="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-muted accent-primary"
 						/>
 					</div>
@@ -187,8 +177,8 @@
 							type="range"
 							min="0"
 							max="200"
-							value={$media.outputVolume}
-							oninput={(event) => setOutputVolume(Number((event.currentTarget as HTMLInputElement).value))}
+							value={media.outputVolume}
+							oninput={(event) => media.setOutputVolume(Number((event.currentTarget as HTMLInputElement).value))}
 							class="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-muted accent-primary"
 						/>
 					</div>
@@ -198,13 +188,13 @@
 					<button
 						type="button"
 						class="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left transition-colors hover:bg-accent"
-						onclick={toggleDeafen}
+						onclick={() => media.toggleDeafen()}
 					>
 						<span class="text-sm font-semibold text-foreground">Deafen</span>
-						<div class={`h-4 w-7 rounded-full transition-colors ${$media.isDeafened ? 'bg-primary' : 'bg-muted'}`}>
+						<div class={`h-4 w-7 rounded-full transition-colors ${media.isDeafened ? 'bg-primary' : 'bg-muted'}`}>
 							<div
 								class={`h-4 w-4 rounded-full border-2 transition-transform ${
-									$media.isDeafened
+									media.isDeafened
 										? 'translate-x-3 border-primary bg-white'
 										: 'translate-x-0 border-muted bg-muted-foreground'
 								}`}
@@ -234,14 +224,14 @@
 		<button
 			type="button"
 			class={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
-				$media.isCameraOn
+				media.isCameraOn
 					? 'text-muted-foreground hover:bg-accent hover:text-foreground'
 					: 'bg-accent text-destructive'
 			}`}
-			onclick={toggleCamera}
-			aria-label={$media.isCameraOn ? 'Turn off camera' : 'Turn on camera'}
+			onclick={() => media.toggleCamera()}
+			aria-label={media.isCameraOn ? 'Turn off camera' : 'Turn on camera'}
 		>
-			{#if $media.isCameraOn}
+			{#if media.isCameraOn}
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true">
 					<path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5" />
 					<rect x="2" y="6" width="14" height="12" rx="2" />
@@ -286,21 +276,21 @@
 					</button>
 					{#if showCameraDevices}
 						<div class="ml-1 grid gap-0.5 border-l border-border pl-2">
-							{#each $media.videoInputs as device}
+							{#each media.videoInputs as device}
 								<button
 									type="button"
 									class={`flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-sm transition-colors ${
-										device.deviceId === $media.selectedVideoInput
+										device.deviceId === media.selectedVideoInput
 											? 'bg-accent text-foreground'
 											: 'text-muted-foreground hover:bg-accent hover:text-foreground'
 									}`}
 									onclick={() => {
-										setSelectedVideoInput(device.deviceId);
+										media.setSelectedVideoInput(device.deviceId);
 										showCameraDevices = false;
 									}}
 								>
 									<span class="truncate">{device.label}</span>
-									{#if device.deviceId === $media.selectedVideoInput}
+									{#if device.deviceId === media.selectedVideoInput}
 										<span class="ml-2 text-xs text-[var(--success)]">✓</span>
 									{/if}
 								</button>
@@ -340,14 +330,14 @@
 	<button
 		type="button"
 		class={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
-			$screenShare.localActive
+			screenShare.localActive
 				? 'bg-accent text-destructive'
 				: 'text-muted-foreground hover:bg-accent hover:text-foreground'
 		}`}
-		onclick={() => void ($screenShare.localActive ? stopScreenShare() : startScreenShare())}
-		aria-label={$screenShare.localActive ? 'Stop sharing' : 'Share screen'}
+		onclick={() => void (screenShare.localActive ? stopScreenShare() : startScreenShare())}
+		aria-label={screenShare.localActive ? 'Stop sharing' : 'Share screen'}
 	>
-		{#if $screenShare.localActive}
+		{#if screenShare.localActive}
 			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true">
 				<path d="M13 3H4a2 2 0 0 0-2 2v6" />
 				<path d="M22 8V5a2 2 0 0 0-2-2h-3" />
@@ -371,11 +361,11 @@
 		<button
 			type="button"
 			class={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
-				$layout.chatOpen
+				layout.chatOpen
 					? 'bg-accent text-destructive'
 					: 'text-muted-foreground hover:bg-accent hover:text-foreground'
 			}`}
-			onclick={toggleChat}
+			onclick={() => layout.toggleChat()}
 			aria-label="Toggle chat"
 		>
 			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true">
@@ -383,9 +373,9 @@
 			</svg>
 		</button>
 
-		{#if $chat.unreadCount > 0}
+		{#if chat.unreadCount > 0}
 			<span class="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
-				{$chat.unreadCount > 99 ? '99+' : $chat.unreadCount}
+				{chat.unreadCount > 99 ? '99+' : chat.unreadCount}
 			</span>
 		{/if}
 	</div>
@@ -393,11 +383,11 @@
 	<button
 		type="button"
 		class={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
-			$layout.rosterOpen
+			layout.rosterOpen
 				? 'bg-accent text-destructive'
 				: 'text-muted-foreground hover:bg-accent hover:text-foreground'
 		}`}
-		onclick={toggleRoster}
+		onclick={() => layout.toggleRoster()}
 		aria-label="Toggle participants"
 	>
 		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true">
@@ -411,10 +401,10 @@
 	<button
 		type="button"
 		class="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-		onclick={toggleLayoutMode}
-		aria-label={$layout.mode === 'gallery' ? 'Speaker view' : 'Gallery view'}
+		onclick={() => layout.toggleMode()}
+		aria-label={layout.mode === 'gallery' ? 'Speaker view' : 'Gallery view'}
 	>
-		{#if $layout.mode === 'gallery'}
+		{#if layout.mode === 'gallery'}
 			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true">
 				<rect x="3" y="4" width="18" height="8" rx="2" />
 				<path d="M5 20h6" />

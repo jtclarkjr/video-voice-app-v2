@@ -1,8 +1,8 @@
-<script lang="ts">
+	<script lang="ts">
 	import GalleryLayout from '$lib/components/layouts/GalleryLayout.svelte';
 	import SpeakerLayout from '$lib/components/layouts/SpeakerLayout.svelte';
-	import { layout, togglePin } from '$lib/stores/layout';
-	import { screenShare } from '$lib/stores/screen-share';
+	import { layout } from '$lib/stores/layout.svelte';
+	import { screenShare } from '$lib/stores/screen-share.svelte';
 	import type { Participant } from '$lib/types/participant';
 
 	let {
@@ -20,9 +20,9 @@
 	}>();
 
 	const screenShareStream = $derived(
-		$screenShare.localActive ? $screenShare.localStream : (Object.values($screenShare.remoteShares)[0] ?? null)
+		screenShare.localActive ? screenShare.localStream : (Object.values(screenShare.remoteShares)[0] ?? null)
 	);
-	const effectiveMode = $derived(screenShareStream ? 'speaker' : $layout.mode);
+	const effectiveMode = $derived(screenShareStream ? 'speaker' : layout.mode);
 </script>
 
 {#if effectiveMode === 'speaker'}
@@ -32,10 +32,10 @@
 		{isCameraOn}
 		{localDisplayName}
 		{localSpeaking}
-		activeSpeakerId={$layout.activeSpeakerId}
-		pinnedId={$layout.pinnedId}
+		activeSpeakerId={layout.activeSpeakerId}
+		pinnedId={layout.pinnedId}
 		{screenShareStream}
-		onPin={togglePin}
+		onPin={(id) => layout.togglePin(id)}
 	/>
 {:else}
 	<GalleryLayout
@@ -44,7 +44,7 @@
 		{isCameraOn}
 		{localDisplayName}
 		{localSpeaking}
-		pinnedId={$layout.pinnedId}
-		onPin={togglePin}
+		pinnedId={layout.pinnedId}
+		onPin={(id) => layout.togglePin(id)}
 	/>
 {/if}

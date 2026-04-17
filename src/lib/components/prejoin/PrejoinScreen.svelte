@@ -1,21 +1,12 @@
 <script lang="ts">
-	import { get } from 'svelte/store';
 	import { onMount, untrack } from 'svelte';
 	import AuthDialog from '$lib/components/auth/AuthDialog.svelte';
 	import MicLevelMeter from '$lib/components/prejoin/MicLevelMeter.svelte';
 	import { getUserDisplayName, hasAuthenticatedSession } from '$lib/auth/session-service';
 	import { fetchActiveRooms } from '$lib/rooms/client';
 	import type { AuthConfig } from '$lib/server/auth-config';
-	import { session } from '$lib/stores/session';
-	import {
-		enumerateDevices,
-		media,
-		setSelectedAudioInput,
-		setSelectedAudioOutput,
-		setSelectedVideoInput,
-		toggleCamera,
-		toggleMic
-	} from '$lib/stores/media';
+	import { session } from '$lib/stores/session.svelte';
+	import { media } from '$lib/stores/media.svelte';
 
 	let {
 		authConfig,
@@ -40,11 +31,10 @@
 	let roomState = $state<RoomState>(untrack(() => isCreateFlow) ? 'missing' : 'loading');
 	let authDialogOpen = $state(false);
 
-	const isAnonymous = $derived($session.isAnonymous);
+	const isAnonymous = $derived(session.isAnonymous);
 	const resolvedDisplayName = $derived.by(() => {
-		const current = get(session);
-		const fallback = getUserDisplayName(current.data?.user ?? null);
-		return current.isAnonymous ? anonymousDisplayName.trim() || fallback : fallback;
+		const fallback = getUserDisplayName(session.data?.user ?? null);
+		return session.isAnonymous ? anonymousDisplayName.trim() || fallback : fallback;
 	});
 
 	$effect(() => {
@@ -59,19 +49,19 @@
 		}
 
 		for (const track of previewStream.getAudioTracks()) {
-			track.enabled = $media.isMicOn;
+			track.enabled = media.isMicOn;
 		}
 		for (const track of previewStream.getVideoTracks()) {
-			track.enabled = $media.isCameraOn;
+			track.enabled = media.isCameraOn;
 		}
 	});
 
 	$effect(() => {
-		if ($session.isPending) {
+		if (session.isPending) {
 			return;
 		}
 
-		if (!$session.isAnonymous) {
+		if (!session.isAnonymous) {
 			anonymousDisplayName = '';
 		}
 	});
@@ -89,7 +79,7 @@
 					return;
 				}
 				previewStream = stream;
-				await enumerateDevices();
+				await media.enumerateDevices();
 			} catch (error) {
 				if (cancelled) {
 					return;
@@ -152,7 +142,7 @@
 			previewStream = stream;
 			needsGesture = false;
 			permissionError = null;
-			await enumerateDevices();
+			await media.enumerateDevices();
 		} catch {
 			needsGesture = false;
 			permissionError = 'Could not access camera/microphone. Please check permissions.';
@@ -160,7 +150,7 @@
 	}
 
 	function handleJoin() {
-		if ($session.isPending) {
+		if (session.isPending) {
 			return;
 		}
 
@@ -173,7 +163,7 @@
 			(isCreateFlow && isAnonymous) ||
 			(roomState === 'missing' &&
 				!isCreateFlow &&
-				!hasAuthenticatedSession($session.data?.session ?? null))
+				!hasAuthenticatedSession(session.data?.session ?? null))
 		) {
 			authDialogOpen = true;
 			return;
@@ -185,10 +175,10 @@
 
 	const roomMissingForAnonymous = $derived((roomState === 'missing' || isCreateFlow) && isAnonymous);
 	const isJoinDisabled = $derived(
-		$session.isPending ||
+		session.isPending ||
 			(isAnonymous && anonymousDisplayName.trim() === '') ||
 			(!isCreateFlow && roomState === 'loading') ||
-			Boolean($session.error)
+			Boolean(session.error)
 	);
 	const joinLabel = $derived.by(() => {
 		if (isCreateFlow) {
@@ -239,10 +229,10 @@
 				autoplay
 				playsinline
 				muted
-				class={`h-full w-full object-cover ${$media.isCameraOn ? 'scale-x-[-1]' : 'invisible'}`}
+				class={`h-full w-full object-cover ${media.isCameraOn ? 'scale-x-[-1]' : 'invisible'}`}
 			></video>
 
-			{#if !$media.isCameraOn}
+			{#if !media.isCameraOn}
 				<div class="absolute inset-0 flex items-center justify-center">
 					<div class="flex h-20 w-20 items-center justify-center rounded-full bg-muted-foreground/20 text-3xl font-semibold text-muted-foreground">
 						{(resolvedDisplayName || 'A').charAt(0).toUpperCase()}
@@ -253,15 +243,15 @@
 			<div class="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
 				<button
 					type="button"
-					onclick={toggleMic}
+					onclick={() => media.toggleMic()}
 					class={`flex h-10 w-10 items-center justify-center rounded-full transition-colors ${
-						$media.isMicOn
+						media.isMicOn
 							? 'bg-secondary/80 text-foreground hover:bg-secondary'
 							: 'bg-destructive text-destructive-foreground'
 					}`}
-					aria-label={$media.isMicOn ? 'Mute' : 'Unmute'}
+					aria-label={media.isMicOn ? 'Mute' : 'Unmute'}
 				>
-					{#if $media.isMicOn}
+					{#if media.isMicOn}
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true">
 							<path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
 							<path d="M19 10v2a7 7 0 0 1-14 0v-2" />
@@ -280,15 +270,15 @@
 				</button>
 				<button
 					type="button"
-					onclick={toggleCamera}
+					onclick={() => media.toggleCamera()}
 					class={`flex h-10 w-10 items-center justify-center rounded-full transition-colors ${
-						$media.isCameraOn
+						media.isCameraOn
 							? 'bg-secondary/80 text-foreground hover:bg-secondary'
 							: 'bg-destructive text-destructive-foreground'
 					}`}
-					aria-label={$media.isCameraOn ? 'Turn off camera' : 'Turn on camera'}
+					aria-label={media.isCameraOn ? 'Turn off camera' : 'Turn on camera'}
 				>
-					{#if $media.isCameraOn}
+					{#if media.isCameraOn}
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true">
 							<path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5" />
 							<rect x="2" y="6" width="14" height="12" rx="2" />
@@ -304,59 +294,59 @@
 			</div>
 		</div>
 
-		{#if previewStream && $media.isMicOn}
+		{#if previewStream && media.isMicOn}
 			<MicLevelMeter stream={previewStream} />
 		{/if}
 
 		<div class="grid gap-4">
-			{#if $media.audioInputs.length > 0}
+			{#if media.audioInputs.length > 0}
 				<label class="grid gap-2">
 					<span class="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
 						Microphone
 					</span>
 					<select
 						class="w-full rounded-xl border border-border/70 bg-card/60 px-4 py-3 outline-none"
-						bind:value={$media.selectedAudioInput}
+						value={media.selectedAudioInput}
 						onchange={(event) =>
-							setSelectedAudioInput((event.currentTarget as HTMLSelectElement).value)}
+							media.setSelectedAudioInput((event.currentTarget as HTMLSelectElement).value)}
 					>
-						{#each $media.audioInputs as device}
+						{#each media.audioInputs as device}
 							<option value={device.deviceId}>{device.label}</option>
 						{/each}
 					</select>
 				</label>
 			{/if}
 
-			{#if $media.audioOutputs.length > 0}
+			{#if media.audioOutputs.length > 0}
 				<label class="grid gap-2">
 					<span class="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
 						Speaker
 					</span>
 					<select
 						class="w-full rounded-xl border border-border/70 bg-card/60 px-4 py-3 outline-none"
-						bind:value={$media.selectedAudioOutput}
+						value={media.selectedAudioOutput}
 						onchange={(event) =>
-							setSelectedAudioOutput((event.currentTarget as HTMLSelectElement).value)}
+							media.setSelectedAudioOutput((event.currentTarget as HTMLSelectElement).value)}
 					>
-						{#each $media.audioOutputs as device}
+						{#each media.audioOutputs as device}
 							<option value={device.deviceId}>{device.label}</option>
 						{/each}
 					</select>
 				</label>
 			{/if}
 
-			{#if $media.videoInputs.length > 0}
+			{#if media.videoInputs.length > 0}
 				<label class="grid gap-2">
 					<span class="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
 						Camera
 					</span>
 					<select
 						class="w-full rounded-xl border border-border/70 bg-card/60 px-4 py-3 outline-none"
-						bind:value={$media.selectedVideoInput}
+						value={media.selectedVideoInput}
 						onchange={(event) =>
-							setSelectedVideoInput((event.currentTarget as HTMLSelectElement).value)}
+							media.setSelectedVideoInput((event.currentTarget as HTMLSelectElement).value)}
 					>
-						{#each $media.videoInputs as device}
+						{#each media.videoInputs as device}
 							<option value={device.deviceId}>{device.label}</option>
 						{/each}
 					</select>
@@ -404,8 +394,8 @@
 					<p class="mt-1 text-base font-medium text-foreground">{resolvedDisplayName}</p>
 				{/if}
 
-				{#if $session.error}
-					<p class="mt-2 text-sm text-destructive">{$session.error}</p>
+				{#if session.error}
+					<p class="mt-2 text-sm text-destructive">{session.error}</p>
 				{:else if roomMissingForAnonymous}
 					<p class="mt-2 text-sm text-muted-foreground">
 						Sign in to create a new room. Guests can join existing rooms.
@@ -424,7 +414,7 @@
 					disabled={isJoinDisabled}
 					onclick={handleJoin}
 				>
-					{$session.isPending ? 'Preparing Session...' : joinLabel}
+					{session.isPending ? 'Preparing Session...' : joinLabel}
 				</button>
 
 				{#if roomMissingForAnonymous}

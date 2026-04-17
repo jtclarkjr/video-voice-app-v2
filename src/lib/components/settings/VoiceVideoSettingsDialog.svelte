@@ -1,17 +1,6 @@
 <script lang="ts">
 	import Modal from '$lib/components/shared/Modal.svelte';
-	import {
-		enumerateDevices,
-		media,
-		setAutoGainControl,
-		setEchoCancellation,
-		setInputVolume,
-		setNoiseSuppression,
-		setOutputVolume,
-		setSelectedAudioInput,
-		setSelectedAudioOutput,
-		setSelectedVideoInput
-	} from '$lib/stores/media';
+	import { media } from '$lib/stores/media.svelte';
 	import type { NoiseSuppression } from '$lib/types/media';
 
 	let { open = false, onClose = () => {} } = $props<{ open?: boolean; onClose?: () => void }>();
@@ -39,7 +28,7 @@
 				// Permissions denied.
 			}
 
-			await enumerateDevices();
+			await media.enumerateDevices();
 		})();
 	});
 
@@ -96,7 +85,7 @@
 
 		try {
 			const stream = await navigator.mediaDevices.getUserMedia({
-				video: $media.selectedVideoInput ? { deviceId: { exact: $media.selectedVideoInput } } : true
+				video: media.selectedVideoInput ? { deviceId: { exact: media.selectedVideoInput } } : true
 			});
 			previewStream = stream;
 		} catch {
@@ -117,7 +106,7 @@
 		stopMicTest();
 		try {
 			micTestStream = await navigator.mediaDevices.getUserMedia({
-				audio: $media.selectedAudioInput ? { deviceId: { exact: $media.selectedAudioInput } } : true
+				audio: media.selectedAudioInput ? { deviceId: { exact: media.selectedAudioInput } } : true
 			});
 		} catch {
 			micTestStream = null;
@@ -139,16 +128,16 @@
 		<div class="grid gap-4 md:grid-cols-2">
 			<label class="grid gap-2">
 				<span class="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground">Microphone</span>
-				<select class="rounded-2xl border border-input bg-card px-4 py-3" bind:value={$media.selectedAudioInput} onchange={(event) => setSelectedAudioInput((event.currentTarget as HTMLSelectElement).value)}>
-					{#each $media.audioInputs.length > 0 ? $media.audioInputs : [{ deviceId: '', label: 'Default' }] as device}
+				<select class="rounded-2xl border border-input bg-card px-4 py-3" value={media.selectedAudioInput} onchange={(event) => media.setSelectedAudioInput((event.currentTarget as HTMLSelectElement).value)}>
+					{#each media.audioInputs.length > 0 ? media.audioInputs : [{ deviceId: '', label: 'Default' }] as device}
 						<option value={device.deviceId}>{device.label}</option>
 					{/each}
 				</select>
 			</label>
 			<label class="grid gap-2">
 				<span class="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground">Speaker</span>
-				<select class="rounded-2xl border border-input bg-card px-4 py-3" bind:value={$media.selectedAudioOutput} onchange={(event) => setSelectedAudioOutput((event.currentTarget as HTMLSelectElement).value)}>
-					{#each $media.audioOutputs.length > 0 ? $media.audioOutputs : [{ deviceId: '', label: 'Default' }] as device}
+				<select class="rounded-2xl border border-input bg-card px-4 py-3" value={media.selectedAudioOutput} onchange={(event) => media.setSelectedAudioOutput((event.currentTarget as HTMLSelectElement).value)}>
+					{#each media.audioOutputs.length > 0 ? media.audioOutputs : [{ deviceId: '', label: 'Default' }] as device}
 						<option value={device.deviceId}>{device.label}</option>
 					{/each}
 				</select>
@@ -158,11 +147,11 @@
 		<div class="grid gap-4 md:grid-cols-2">
 			<label class="grid gap-2">
 				<span class="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground">Mic Volume</span>
-				<input type="range" min="0" max="200" value={$media.inputVolume} oninput={(event) => setInputVolume(Number((event.currentTarget as HTMLInputElement).value))} />
+				<input type="range" min="0" max="200" value={media.inputVolume} oninput={(event) => media.setInputVolume(Number((event.currentTarget as HTMLInputElement).value))} />
 			</label>
 			<label class="grid gap-2">
 				<span class="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground">Speaker Volume</span>
-				<input type="range" min="0" max="200" value={$media.outputVolume} oninput={(event) => setOutputVolume(Number((event.currentTarget as HTMLInputElement).value))} />
+				<input type="range" min="0" max="200" value={media.outputVolume} oninput={(event) => media.setOutputVolume(Number((event.currentTarget as HTMLInputElement).value))} />
 			</label>
 		</div>
 
@@ -176,16 +165,16 @@
 			<div class="grid gap-3 md:grid-cols-2">
 				<label class="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3">
 					<span class="text-sm font-semibold">Echo Cancellation</span>
-					<input type="checkbox" checked={$media.echoCancellation} onchange={(event) => setEchoCancellation((event.currentTarget as HTMLInputElement).checked)} />
+					<input type="checkbox" checked={media.echoCancellation} onchange={(event) => media.setEchoCancellation((event.currentTarget as HTMLInputElement).checked)} />
 				</label>
 				<label class="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3">
 					<span class="text-sm font-semibold">Automatic Gain Control</span>
-					<input type="checkbox" checked={$media.autoGainControl} onchange={(event) => setAutoGainControl((event.currentTarget as HTMLInputElement).checked)} />
+					<input type="checkbox" checked={media.autoGainControl} onchange={(event) => media.setAutoGainControl((event.currentTarget as HTMLInputElement).checked)} />
 				</label>
 			</div>
 			<label class="grid gap-2">
 				<span class="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground">Noise Suppression</span>
-				<select class="rounded-2xl border border-input bg-card px-4 py-3" bind:value={$media.noiseSuppression} onchange={(event) => setNoiseSuppression((event.currentTarget as HTMLSelectElement).value as NoiseSuppression)}>
+				<select class="rounded-2xl border border-input bg-card px-4 py-3" value={media.noiseSuppression} onchange={(event) => media.setNoiseSuppression((event.currentTarget as HTMLSelectElement).value as NoiseSuppression)}>
 					<option value="high">High</option>
 					<option value="low">Low</option>
 					<option value="off">Off</option>
@@ -211,8 +200,8 @@
 
 			<label class="grid gap-2">
 				<span class="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground">Camera</span>
-				<select class="rounded-2xl border border-input bg-card px-4 py-3" bind:value={$media.selectedVideoInput} onchange={(event) => setSelectedVideoInput((event.currentTarget as HTMLSelectElement).value)}>
-					{#each $media.videoInputs.length > 0 ? $media.videoInputs : [{ deviceId: '', label: 'Default' }] as device}
+				<select class="rounded-2xl border border-input bg-card px-4 py-3" value={media.selectedVideoInput} onchange={(event) => media.setSelectedVideoInput((event.currentTarget as HTMLSelectElement).value)}>
+					{#each media.videoInputs.length > 0 ? media.videoInputs : [{ deviceId: '', label: 'Default' }] as device}
 						<option value={device.deviceId}>{device.label}</option>
 					{/each}
 				</select>

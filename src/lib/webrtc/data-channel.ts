@@ -1,4 +1,4 @@
-import { addChatMessage } from '$lib/stores/chat'
+import { chat } from '$lib/stores/chat.svelte'
 import type { ChatMessage } from '$lib/types/chat'
 import { dataChannels } from '$lib/webrtc/shared'
 
@@ -20,7 +20,7 @@ function registerChannel(peerId: string, channel: RTCDataChannel) {
     try {
       const msg: ChatMessage = JSON.parse(event.data)
       if (msg.text) {
-        addChatMessage(msg)
+        chat.addMessage(msg)
       }
     } catch {
       // Ignore malformed messages

@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { media } from '$lib/stores/media';
-	import { participants } from '$lib/stores/participants';
+	import { media } from '$lib/stores/media.svelte';
+	import { participants } from '$lib/stores/participants.svelte';
 
 	let { localDisplayName = 'You' } = $props<{ localDisplayName?: string }>();
 
-	const remoteList = $derived(Object.values($participants));
+	const remoteList = $derived(participants.list);
 </script>
 
 <div class="flex h-full flex-col border-l border-border bg-card">
@@ -21,7 +21,7 @@
 				<div class="truncate text-sm font-medium text-foreground">{localDisplayName}</div>
 			</div>
 			<div class="flex items-center gap-1.5">
-				{#if $media.isMicOn}
+				{#if media.isMicOn}
 					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true">
 						<path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
 						<path d="M19 10v2a7 7 0 0 1-14 0v-2" />
@@ -38,7 +38,7 @@
 					</svg>
 				{/if}
 
-				{#if $media.isCameraOn}
+				{#if media.isCameraOn}
 					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true">
 						<path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5" />
 						<rect x="2" y="6" width="14" height="12" rx="2" />

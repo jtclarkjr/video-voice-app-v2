@@ -3,11 +3,8 @@ import {
   sendIceCandidate,
   sendOffer
 } from '$lib/signaling/connection'
-import {
-  setParticipantConnectionState,
-  setParticipantStream
-} from '$lib/stores/participants'
-import { setRemoteScreenShare } from '$lib/stores/screen-share'
+import { participants } from '$lib/stores/participants.svelte'
+import { screenShare } from '$lib/stores/screen-share.svelte'
 import {
   candidateBuffers,
   disconnectTimers,
@@ -58,12 +55,12 @@ export function createPeerConnection(peerId: string): RTCPeerConnection {
       cameraStreamId &&
       stream.id !== cameraStreamId
     ) {
-      setRemoteScreenShare(peerId, stream)
+      screenShare.setRemote(peerId, stream)
     } else {
       if (!cameraStreamId) {
         cameraStreamId = stream.id
       }
-      setParticipantStream(peerId, stream)
+      participants.setStream(peerId, stream)
     }
   }
 
@@ -71,10 +68,10 @@ export function createPeerConnection(peerId: string): RTCPeerConnection {
     const state = pc.connectionState
 
     if (state === 'connected') {
-      setParticipantConnectionState(peerId, 'connected')
+      participants.setConnectionState(peerId, 'connected')
       clearDisconnectTimer(peerId)
     } else if (state === 'disconnected') {
-      setParticipantConnectionState(peerId, 'disconnected')
+      participants.setConnectionState(peerId, 'disconnected')
       clearDisconnectTimer(peerId)
       disconnectTimers.set(
         peerId,
@@ -86,10 +83,10 @@ export function createPeerConnection(peerId: string): RTCPeerConnection {
         }, 5000)
       )
     } else if (state === 'failed') {
-      setParticipantConnectionState(peerId, 'failed')
+      participants.setConnectionState(peerId, 'failed')
       void attemptIceRestart(peerId)
     } else if (state === 'connecting' || state === 'new') {
-      setParticipantConnectionState(peerId, 'connecting')
+      participants.setConnectionState(peerId, 'connecting')
     }
   }
 

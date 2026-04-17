@@ -7,15 +7,15 @@
 	import ChatPanel from '$lib/components/other/ChatPanel.svelte';
 	import ConnectionBanner from '$lib/components/other/ConnectionBanner.svelte';
 	import ParticipantRoster from '$lib/components/other/ParticipantRoster.svelte';
-	import { localSpeaking, startAudioLevels, stopAudioLevels, trackStream, untrackStream } from '$lib/audio-levels';
+	import { audioLevels } from '$lib/audio-levels.svelte';
 	import { startQualityMonitor, stopQualityMonitor } from '$lib/quality-monitor';
 	import { connect, disconnect, sendMediaState } from '$lib/signaling/connection';
-	import { clearParticipants, participants, addParticipant, removeParticipant, setParticipantMediaState, setParticipantScreenSharing } from '$lib/stores/participants';
-	import { clearUnread, resetChat } from '$lib/stores/chat';
-	import { connection, setConnected, setConnectionPhase, setDisconnected } from '$lib/stores/connection';
-	import { layout, resetLayout } from '$lib/stores/layout';
-	import { enumerateDevices, media, resetMedia, setCameraEnabled, setLocalStream, setMicEnabled } from '$lib/stores/media';
-	import { resetScreenShare, screenShare } from '$lib/stores/screen-share';
+	import { participants } from '$lib/stores/participants.svelte';
+	import { chat } from '$lib/stores/chat.svelte';
+	import { connection } from '$lib/stores/connection.svelte';
+	import { layout } from '$lib/stores/layout.svelte';
+	import { media } from '$lib/stores/media.svelte';
+	import { screenShare } from '$lib/stores/screen-share.svelte';
 	import { closeAll, closePeerConnection } from '$lib/webrtc/cleanup';
 	import { createOffer, handleAnswer, handleIceCandidate, handleOffer } from '$lib/webrtc/negotiation';
 	import { markPeerScreenSharing } from '$lib/webrtc/screen-share-tracks';
@@ -42,14 +42,14 @@
 		let destroyed = false;
 
 		const init = async () => {
-			setConnectionPhase('connecting');
-			setMicEnabled(initialMicOn);
-			setCameraEnabled(initialCameraOn);
+			connection.setPhase('connecting');
+			media.setMicEnabled(initialMicOn);
+			media.setCameraEnabled(initialCameraOn);
 
 			try {
 				const stream = await getUserMedia();
-				setLocalStream(stream);
-				await enumerateDevices();
+				media.setLocalStream(stream);
+				await media.enumerateDevices();
 			} catch {
 				error = 'Could not access camera or microphone. Please check permissions.';
 				return;
@@ -61,13 +61,13 @@
 
 			const handlers: SignalHandlers = {
 				onJoined(userId, joinedRoomId, peers) {
-					setConnected(userId, joinedRoomId);
-					startAudioLevels(userId);
+					connection.setConnected(userId, joinedRoomId);
+					audioLevels.start(userId);
 					startQualityMonitor();
 
 					for (const peer of peers) {
-						addParticipant(peer.id, peer.displayName);
-						setParticipantMediaState(peer.id, {
+						participants.add(peer.id, peer.displayName);
+						participants.setMediaState(peer.id, {
 							audioEnabled: peer.audioEnabled,
 							videoEnabled: peer.videoEnabled
 						});
@@ -75,16 +75,16 @@
 					}
 				},
 				onPeerJoined(peerId, peerDisplayName, audioEnabled, videoEnabled) {
-					addParticipant(peerId, peerDisplayName);
-					setParticipantMediaState(peerId, { audioEnabled, videoEnabled });
+					participants.add(peerId, peerDisplayName);
+					participants.setMediaState(peerId, { audioEnabled, videoEnabled });
 				},
 				onPeerMediaState(peerId, audioEnabled, videoEnabled) {
-					setParticipantMediaState(peerId, { audioEnabled, videoEnabled });
+					participants.setMediaState(peerId, { audioEnabled, videoEnabled });
 				},
 				onPeerLeft(peerId) {
 					closePeerConnection(peerId);
-					removeParticipant(peerId);
-					untrackStream(peerId);
+					participants.remove(peerId);
+					audioLevels.untrack(peerId);
 				},
 				onOffer(fromId, sdp) {
 					void handleOffer(fromId, sdp);
@@ -97,17 +97,17 @@
 				},
 				onScreenShareStart(peerId) {
 					markPeerScreenSharing(peerId, true);
-					setParticipantScreenSharing(peerId, true);
+					participants.setScreenSharing(peerId, true);
 				},
 				onScreenShareStop(peerId) {
 					markPeerScreenSharing(peerId, false);
-					setParticipantScreenSharing(peerId, false);
+					participants.setScreenSharing(peerId, false);
 				},
 				onError(message) {
 					error = message;
 				},
 				onReconnected() {
-					setConnectionPhase('connected');
+					connection.setPhase('connected');
 				}
 			};
 
@@ -120,34 +120,34 @@
 			destroyed = true;
 			disconnect();
 			closeAll();
-			stopAudioLevels();
+			audioLevels.stop();
 			stopQualityMonitor();
-			setDisconnected();
-			resetMedia();
-			clearParticipants();
-			resetLayout();
-			resetChat();
-			resetScreenShare();
-			clearUnread();
+			connection.setDisconnected();
+			media.reset();
+			participants.clear();
+			layout.reset();
+			chat.reset();
+			screenShare.reset();
+			chat.clearUnread();
 		};
 	});
 
 	$effect(() => {
-		if ($connection.phase === 'connected') {
-			sendMediaState($media.isMicOn, $media.isCameraOn);
+		if (connection.phase === 'connected') {
+			sendMediaState(media.isMicOn, media.isCameraOn);
 		}
 	});
 
 	$effect(() => {
-		if ($media.localStream && $connection.userId) {
-			trackStream($connection.userId, $media.localStream);
+		if (media.localStream && connection.userId) {
+			audioLevels.track(connection.userId, media.localStream);
 		}
 	});
 
 	$effect(() => {
-		for (const [id, participant] of Object.entries($participants)) {
+		for (const [id, participant] of Object.entries(participants.byId)) {
 			if (participant.stream) {
-				trackStream(id, participant.stream);
+				audioLevels.track(id, participant.stream);
 			}
 		}
 	});
@@ -155,25 +155,25 @@
 	function handleLeave() {
 		disconnect();
 		closeAll();
-		stopAudioLevels();
+		audioLevels.stop();
 		stopQualityMonitor();
-		setDisconnected();
-		resetMedia();
-		clearParticipants();
-		resetLayout();
-		resetChat();
-		resetScreenShare();
+		connection.setDisconnected();
+		media.reset();
+		participants.clear();
+		layout.reset();
+		chat.reset();
+		screenShare.reset();
 		void goto('/');
 	}
 
 	$effect(() => {
 		const panelDeps = {
-			mode: $layout.mode,
-			chatOpen: $layout.chatOpen,
-			rosterOpen: $layout.rosterOpen,
-			screenShareActive: $screenShare.localActive,
-			participantCount: Object.keys($participants).length,
-			localStream: $media.localStream
+			mode: layout.mode,
+			chatOpen: layout.chatOpen,
+			rosterOpen: layout.rosterOpen,
+			screenShareActive: screenShare.localActive,
+			participantCount: Object.keys(participants.byId).length,
+			localStream: media.localStream
 		};
 		void panelDeps;
 
@@ -221,26 +221,26 @@
 		<div class="flex items-center justify-between">
 			<h2 class="text-lg font-semibold text-foreground">Room: {roomId}</h2>
 			<span class="text-sm text-muted-foreground">
-				{Object.keys($participants).length + 1} participant{Object.keys($participants).length === 0 ? '' : 's'}
+				{Object.keys(participants.byId).length + 1} participant{Object.keys(participants.byId).length === 0 ? '' : 's'}
 			</span>
 		</div>
 
 		<div class="flex items-start gap-4">
 			<div bind:this={layoutHost} class="min-w-0 flex-1">
 				<LayoutContainer
-					localStream={$media.localStream}
-					participants={$participants}
-					isCameraOn={$media.isCameraOn}
+					localStream={media.localStream}
+					participants={participants.byId}
+					isCameraOn={media.isCameraOn}
 					localDisplayName={displayName}
-					localSpeaking={$localSpeaking}
+					localSpeaking={audioLevels.localSpeaking}
 				/>
 			</div>
 
-			{#if $layout.chatOpen}
+			{#if layout.chatOpen}
 				<div class="w-80 shrink-0 self-start overflow-hidden" style:height={sidePanelHeight ? `${sidePanelHeight}px` : undefined}>
 					<ChatPanel />
 				</div>
-			{:else if $layout.rosterOpen}
+			{:else if layout.rosterOpen}
 				<div class="w-80 shrink-0 self-start overflow-hidden" style:height={sidePanelHeight ? `${sidePanelHeight}px` : undefined}>
 					<ParticipantRoster localDisplayName={displayName} />
 				</div>

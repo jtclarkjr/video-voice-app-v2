@@ -1,44 +1,34 @@
 import { beforeEach, describe, expect, it } from 'vite-plus/test'
-import { get } from 'svelte/store'
-import {
-  enumerateDevices,
-  media,
-  resetMedia,
-  setDevices,
-  setSelectedAudioInput,
-  setSelectedVideoInput,
-  toggleCamera,
-  toggleMic
-} from '$lib/stores/media'
+import { media } from '$lib/stores/media.svelte'
 
 describe('media store', () => {
   beforeEach(() => {
-    resetMedia()
+    media.reset()
   })
 
   it('toggles microphone and camera flags', () => {
-    expect(get(media).isMicOn).toBe(true)
-    expect(get(media).isCameraOn).toBe(true)
+    expect(media.isMicOn).toBe(true)
+    expect(media.isCameraOn).toBe(true)
 
-    toggleMic()
-    toggleCamera()
+    media.toggleMic()
+    media.toggleCamera()
 
-    expect(get(media).isMicOn).toBe(false)
-    expect(get(media).isCameraOn).toBe(false)
+    expect(media.isMicOn).toBe(false)
+    expect(media.isCameraOn).toBe(false)
   })
 
   it('keeps selected devices when explicitly updated', () => {
-    setDevices(
+    media.setDevices(
       [{ deviceId: 'mic-1', label: 'Mic 1' }],
       [{ deviceId: 'speaker-1', label: 'Speaker 1' }],
       [{ deviceId: 'camera-1', label: 'Camera 1' }]
     )
 
-    setSelectedAudioInput('mic-1')
-    setSelectedVideoInput('camera-1')
+    media.setSelectedAudioInput('mic-1')
+    media.setSelectedVideoInput('camera-1')
 
-    expect(get(media).selectedAudioInput).toBe('mic-1')
-    expect(get(media).selectedVideoInput).toBe('camera-1')
+    expect(media.selectedAudioInput).toBe('mic-1')
+    expect(media.selectedVideoInput).toBe('camera-1')
   })
 
   it('enumerates devices into categorized lists', async () => {
@@ -56,11 +46,11 @@ describe('media store', () => {
       configurable: true
     })
 
-    await enumerateDevices()
+    await media.enumerateDevices()
 
-    expect(get(media).audioInputs).toHaveLength(1)
-    expect(get(media).audioOutputs).toHaveLength(1)
-    expect(get(media).videoInputs).toHaveLength(1)
+    expect(media.audioInputs).toHaveLength(1)
+    expect(media.audioOutputs).toHaveLength(1)
+    expect(media.videoInputs).toHaveLength(1)
 
     Object.defineProperty(globalThis, 'navigator', {
       value: originalNavigator,

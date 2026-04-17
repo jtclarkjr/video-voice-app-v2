@@ -1,9 +1,4 @@
-import { get } from 'svelte/store'
-import {
-  connection,
-  incrementReconnectAttempts,
-  setConnectionPhase
-} from '$lib/stores/connection'
+import { connection } from '$lib/stores/connection.svelte'
 import type { SignalHandlers } from '$lib/signaling/types'
 
 const MAX_RECONNECT_ATTEMPTS = 10
@@ -22,14 +17,14 @@ export function scheduleReconnect(
   displayName: string,
   handlers: SignalHandlers
 ) {
-  const attempts = get(connection).reconnectAttempts
+  const attempts = connection.reconnectAttempts
   if (attempts >= MAX_RECONNECT_ATTEMPTS) {
-    setConnectionPhase('failed')
+    connection.setPhase('failed')
     return
   }
 
-  setConnectionPhase('reconnecting')
-  incrementReconnectAttempts()
+  connection.setPhase('reconnecting')
+  connection.incrementReconnectAttempts()
 
   const delay = Math.min(
     BASE_RECONNECT_DELAY * Math.pow(2, attempts),

@@ -1,39 +1,31 @@
 import { beforeEach, describe, expect, it } from 'vite-plus/test'
-import { get } from 'svelte/store'
-import { addChatMessage, chat, clearUnread, resetChat } from '$lib/stores/chat'
-import {
-  getLayoutSnapshot,
-  layout,
-  resetLayout,
-  toggleChat,
-  toggleLayoutMode,
-  toggleRoster
-} from '$lib/stores/layout'
+import { chat } from '$lib/stores/chat.svelte'
+import { layout } from '$lib/stores/layout.svelte'
 
 describe('layout and chat stores', () => {
   beforeEach(() => {
-    resetLayout()
-    resetChat()
+    layout.reset()
+    chat.reset()
   })
 
   it('toggles between gallery and speaker layout', () => {
-    expect(getLayoutSnapshot().mode).toBe('gallery')
-    toggleLayoutMode()
-    expect(getLayoutSnapshot().mode).toBe('speaker')
+    expect(layout.mode).toBe('gallery')
+    layout.toggleMode()
+    expect(layout.mode).toBe('speaker')
   })
 
   it('opens chat and roster mutually exclusively', () => {
-    toggleChat()
-    expect(get(layout).chatOpen).toBe(true)
-    expect(get(layout).rosterOpen).toBe(false)
+    layout.toggleChat()
+    expect(layout.chatOpen).toBe(true)
+    expect(layout.rosterOpen).toBe(false)
 
-    toggleRoster()
-    expect(get(layout).chatOpen).toBe(false)
-    expect(get(layout).rosterOpen).toBe(true)
+    layout.toggleRoster()
+    expect(layout.chatOpen).toBe(false)
+    expect(layout.rosterOpen).toBe(true)
   })
 
   it('tracks unread chat count only when chat is closed', () => {
-    addChatMessage({
+    chat.addMessage({
       id: 'message-1',
       fromId: 'peer-1',
       displayName: 'Peer',
@@ -41,10 +33,10 @@ describe('layout and chat stores', () => {
       timestamp: Date.now()
     })
 
-    expect(get(chat).unreadCount).toBe(1)
+    expect(chat.unreadCount).toBe(1)
 
-    toggleChat()
-    addChatMessage({
+    layout.toggleChat()
+    chat.addMessage({
       id: 'message-2',
       fromId: 'peer-1',
       displayName: 'Peer',
@@ -52,8 +44,8 @@ describe('layout and chat stores', () => {
       timestamp: Date.now()
     })
 
-    expect(get(chat).unreadCount).toBe(1)
-    clearUnread()
-    expect(get(chat).unreadCount).toBe(0)
+    expect(chat.unreadCount).toBe(1)
+    chat.clearUnread()
+    expect(chat.unreadCount).toBe(0)
   })
 })

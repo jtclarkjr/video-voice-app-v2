@@ -1,5 +1,4 @@
-import { get } from 'svelte/store'
-import { media } from '$lib/stores/media'
+import { media } from '$lib/stores/media.svelte'
 
 export const rtcConfig: RTCConfiguration = {
   iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
@@ -22,38 +21,35 @@ export function setLocalStreamRef(stream: MediaStream | null) {
 }
 
 function buildUserMediaConstraints(): MediaStreamConstraints {
-  const currentMedia = get(media)
-
   const audio: MediaTrackConstraints = {
-    echoCancellation: currentMedia.echoCancellation,
-    noiseSuppression: currentMedia.noiseSuppression !== 'off',
-    autoGainControl: currentMedia.autoGainControl
+    echoCancellation: media.echoCancellation,
+    noiseSuppression: media.noiseSuppression !== 'off',
+    autoGainControl: media.autoGainControl
   }
 
-  if (currentMedia.selectedAudioInput) {
-    audio.deviceId = { exact: currentMedia.selectedAudioInput }
+  if (media.selectedAudioInput) {
+    audio.deviceId = { exact: media.selectedAudioInput }
   }
 
   const video: MediaTrackConstraints = {}
-  if (currentMedia.selectedVideoInput) {
-    video.deviceId = { exact: currentMedia.selectedVideoInput }
+  if (media.selectedVideoInput) {
+    video.deviceId = { exact: media.selectedVideoInput }
   }
 
   return { audio, video }
 }
 
 export async function getUserMedia(): Promise<MediaStream> {
-  const currentMedia = get(media)
   const stream = await navigator.mediaDevices.getUserMedia(
     buildUserMediaConstraints()
   )
 
   for (const track of stream.getAudioTracks()) {
-    track.enabled = currentMedia.isMicOn
+    track.enabled = media.isMicOn
   }
 
   for (const track of stream.getVideoTracks()) {
-    track.enabled = currentMedia.isCameraOn
+    track.enabled = media.isCameraOn
   }
 
   localStream = stream

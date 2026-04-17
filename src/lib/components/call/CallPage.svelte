@@ -3,8 +3,8 @@
 	import CallRoom from '$lib/components/call/CallRoom.svelte';
 	import PrejoinScreen from '$lib/components/prejoin/PrejoinScreen.svelte';
 	import type { AuthConfig } from '$lib/server/auth-config';
-	import { consumePendingJoin, savePendingJoin } from '$lib/stores/pending-join';
-	import { media } from '$lib/stores/media';
+	import { pendingJoin } from '$lib/stores/pending-join.svelte';
+	import { media } from '$lib/stores/media.svelte';
 
 	let {
 		roomId: initialRoomId,
@@ -32,7 +32,7 @@
 
 	$effect(() => {
 		if (!isCreateFlow && initialRoomId) {
-			const pending = consumePendingJoin(initialRoomId);
+			const pending = pendingJoin.consume(initialRoomId);
 			if (pending) {
 				displayName = pending.displayName;
 				joinMediaState = {
@@ -45,20 +45,19 @@
 	});
 
 	function handleJoin(name: string, nextRoomId = roomId) {
-		const currentMedia = $media;
 		displayName = name;
 		roomId = nextRoomId;
 		joinMediaState = {
-			isMicOn: currentMedia.isMicOn,
-			isCameraOn: currentMedia.isCameraOn
+			isMicOn: media.isMicOn,
+			isCameraOn: media.isCameraOn
 		};
 
 		if (isCreateFlow) {
-			savePendingJoin({
+			pendingJoin.save({
 				roomId: nextRoomId,
 				displayName: name,
-				isMicOn: currentMedia.isMicOn,
-				isCameraOn: currentMedia.isCameraOn,
+				isMicOn: media.isMicOn,
+				isCameraOn: media.isCameraOn,
 				createdAt: Date.now()
 			});
 			void goto(`/call/${encodeURIComponent(nextRoomId)}`);

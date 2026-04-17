@@ -2,10 +2,7 @@ import {
   sendScreenShareStart,
   sendScreenShareStop
 } from '$lib/signaling/connection'
-import {
-  clearLocalScreenShare,
-  setLocalScreenShare
-} from '$lib/stores/screen-share'
+import { screenShare } from '$lib/stores/screen-share.svelte'
 import {
   addScreenShareTracks,
   removeScreenShareTracks
@@ -25,7 +22,7 @@ export async function startScreenShare() {
     })
 
     activeStream = stream
-    setLocalScreenShare(stream)
+    screenShare.setLocal(stream)
     sendScreenShareStart(stream.id)
 
     await addScreenShareTracks(stream)
@@ -51,7 +48,7 @@ export async function stopScreenShare() {
 
   sendScreenShareStop()
   await removeScreenShareTracks(stream)
-  clearLocalScreenShare()
+  screenShare.clearLocal()
 }
 
 export function isScreenSharing() {

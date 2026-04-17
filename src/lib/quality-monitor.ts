@@ -1,4 +1,4 @@
-import { setParticipantNetworkQuality } from '$lib/stores/participants'
+import { participants } from '$lib/stores/participants.svelte'
 import type { NetworkQuality } from '$lib/types/connection'
 import { peerConnections } from '$lib/webrtc/shared'
 
@@ -121,7 +121,7 @@ async function pollStats() {
         if (state.consecutiveWorse >= DOWNGRADE_THRESHOLD) {
           state.currentQuality = measuredQuality
           state.consecutiveWorse = 0
-          setParticipantNetworkQuality(peerId, measuredQuality)
+          participants.setNetworkQuality(peerId, measuredQuality)
           void applyQualityProfile(pc, measuredQuality)
         }
       } else if (measuredIdx < currentIdx) {
@@ -130,7 +130,7 @@ async function pollStats() {
         if (state.consecutiveBetter >= UPGRADE_THRESHOLD) {
           state.currentQuality = measuredQuality
           state.consecutiveBetter = 0
-          setParticipantNetworkQuality(peerId, measuredQuality)
+          participants.setNetworkQuality(peerId, measuredQuality)
           void applyQualityProfile(pc, measuredQuality)
         }
       } else {
@@ -138,7 +138,7 @@ async function pollStats() {
         state.consecutiveWorse = 0
         if (state.currentQuality === 'unknown') {
           state.currentQuality = measuredQuality
-          setParticipantNetworkQuality(peerId, measuredQuality)
+          participants.setNetworkQuality(peerId, measuredQuality)
         }
       }
 

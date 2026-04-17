@@ -3,8 +3,8 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import { onMount } from 'svelte';
 	import AuthControls from '$lib/components/auth/AuthControls.svelte';
-	import { initSessionStore } from '$lib/stores/session';
-	import { theme } from '$lib/stores/theme';
+	import { session } from '$lib/stores/session.svelte';
+	import { theme } from '$lib/stores/theme.svelte';
 	import type { AuthConfig } from '$lib/server/auth-config';
 
 	let { children, data } = $props<{
@@ -15,7 +15,7 @@
 	}>();
 
 	onMount(() => {
-		void initSessionStore();
+		void session.init();
 		return theme.init();
 	});
 </script>

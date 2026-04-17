@@ -1,11 +1,11 @@
 import { browser } from '$app/environment'
-import { writable } from 'svelte/store'
 
 export type Theme = 'light' | 'dark' | 'system'
 
 const STORAGE_KEY = 'theme'
 
-const themeStore = writable<Theme>('system')
+let current = $state<Theme>('system')
+let cleanup: (() => void) | undefined
 
 function resolveTheme(theme: Theme): 'light' | 'dark' {
   if (!browser) {
@@ -33,17 +33,23 @@ function applyTheme(theme: Theme) {
 }
 
 export const theme = {
-  subscribe: themeStore.subscribe,
+  get current() {
+    return current
+  },
   set(nextTheme: Theme) {
-    themeStore.set(nextTheme)
+    current = nextTheme
     if (browser) {
       window.localStorage.setItem(STORAGE_KEY, nextTheme)
     }
+
     applyTheme(nextTheme)
   },
   init() {
+    cleanup?.()
+    cleanup = undefined
+
     if (!browser) {
-      return
+      return undefined
     }
 
     const stored = window.localStorage.getItem(STORAGE_KEY)
@@ -51,7 +57,8 @@ export const theme = {
       stored === 'light' || stored === 'dark' || stored === 'system'
         ? stored
         : 'system'
-    themeStore.set(nextTheme)
+
+    current = nextTheme
     applyTheme(nextTheme)
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
@@ -60,8 +67,10 @@ export const theme = {
         applyTheme('system')
       }
     }
+
     mediaQuery.addEventListener('change', listener)
-    return () => mediaQuery.removeEventListener('change', listener)
+    cleanup = () => mediaQuery.removeEventListener('change', listener)
+    return cleanup
   }
 }
 

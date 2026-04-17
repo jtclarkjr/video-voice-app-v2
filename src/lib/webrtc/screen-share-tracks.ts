@@ -1,5 +1,5 @@
 import { sendOffer } from '$lib/signaling/connection'
-import { removeRemoteScreenShare } from '$lib/stores/screen-share'
+import { screenShare } from '$lib/stores/screen-share.svelte'
 import { peerConnections, screenSharingPeers } from '$lib/webrtc/shared'
 
 export function markPeerScreenSharing(peerId: string, sharing: boolean) {
@@ -7,7 +7,7 @@ export function markPeerScreenSharing(peerId: string, sharing: boolean) {
     screenSharingPeers.add(peerId)
   } else {
     screenSharingPeers.delete(peerId)
-    removeRemoteScreenShare(peerId)
+    screenShare.removeRemote(peerId)
   }
 }
 
