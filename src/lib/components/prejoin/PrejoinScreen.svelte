@@ -8,6 +8,8 @@
   import { session } from '$lib/stores/session.svelte'
   import { media } from '$lib/stores/media.svelte'
 
+  const ACCESS_ERROR_MESSAGE = 'Could not access camera/microphone. Please check permissions.'
+
   let {
     authConfig,
     roomId,
@@ -30,6 +32,8 @@
   let needsGesture = $state(false)
   let roomState = $state<RoomState>(untrack(() => isCreateFlow) ? 'missing' : 'loading')
   let authDialogOpen = $state(false)
+  let isMounted = false
+  let previewRequestToken = 0
 
   const isAnonymous = $derived(session.isAnonymous)
   const resolvedDisplayName = $derived.by(() => {
@@ -66,44 +70,99 @@
     }
   })
 
+  function isPermissionDenied(error: unknown) {
+    return (
+      error instanceof DOMException &&
+      (error.name === 'NotAllowedError' || error.name === 'SecurityError')
+    )
+  }
+
+  async function syncDevices() {
+    try {
+      await media.enumerateDevices()
+    } catch {
+      // Ignore device enumeration failures and keep the current UI state.
+    }
+  }
+
+  function hasLiveTrack(kind: 'audio' | 'video') {
+    if (!previewStream) {
+      return false
+    }
+
+    const tracks =
+      kind === 'audio' ? previewStream.getAudioTracks() : previewStream.getVideoTracks()
+
+    return tracks.some((track) => track.readyState === 'live')
+  }
+
+  function shouldReconnectPreview() {
+    if (permissionError || !previewStream) {
+      return true
+    }
+
+    return !hasLiveTrack('audio') || !hasLiveTrack('video')
+  }
+
+  async function refreshPreview() {
+    const requestToken = ++previewRequestToken
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+      if (!isMounted || requestToken !== previewRequestToken) {
+        for (const track of stream.getTracks()) {
+          track.stop()
+        }
+        return
+      }
+
+      stopPreview()
+      previewStream = stream
+      needsGesture = false
+      permissionError = null
+      await syncDevices()
+    } catch (error) {
+      if (!isMounted || requestToken !== previewRequestToken) {
+        return
+      }
+
+      stopPreview()
+      await syncDevices()
+
+      if (isPermissionDenied(error)) {
+        needsGesture = true
+        permissionError = null
+        return
+      }
+
+      needsGesture = false
+      permissionError = ACCESS_ERROR_MESSAGE
+    }
+  }
+
   onMount(() => {
-    let cancelled = false
+    isMounted = true
 
-    async function initPreview() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
-        if (cancelled) {
-          for (const track of stream.getTracks()) {
-            track.stop()
-          }
-          return
-        }
-        previewStream = stream
-        await media.enumerateDevices()
-      } catch (error) {
-        if (cancelled) {
-          return
-        }
+    const handleDeviceChange = async () => {
+      await syncDevices()
 
-        if (error instanceof DOMException && error.name === 'NotAllowedError') {
-          needsGesture = true
-        } else {
-          permissionError = 'Could not access camera/microphone. Please check permissions.'
-        }
+      if (shouldReconnectPreview()) {
+        await refreshPreview()
       }
     }
 
-    void initPreview()
+    navigator.mediaDevices.addEventListener('devicechange', handleDeviceChange)
+    void refreshPreview()
 
     if (!isCreateFlow) {
       void (async () => {
         try {
           const rooms = await fetchActiveRooms()
-          if (!cancelled) {
+          if (isMounted) {
             roomState = rooms.some((room) => room.id === roomId) ? 'exists' : 'missing'
           }
         } catch {
-          if (!cancelled) {
+          if (isMounted) {
             roomState = 'unknown'
           }
         }
@@ -111,7 +170,9 @@
     }
 
     return () => {
-      cancelled = true
+      isMounted = false
+      previewRequestToken += 1
+      navigator.mediaDevices.removeEventListener('devicechange', handleDeviceChange)
       stopPreview()
     }
   })
@@ -136,17 +197,7 @@
   }
 
   async function requestPermissions() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
-      stopPreview()
-      previewStream = stream
-      needsGesture = false
-      permissionError = null
-      await media.enumerateDevices()
-    } catch {
-      needsGesture = false
-      permissionError = 'Could not access camera/microphone. Please check permissions.'
-    }
+    await refreshPreview()
   }
 
   function handleJoin() {

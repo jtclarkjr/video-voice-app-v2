@@ -31,6 +31,37 @@ describe('media store', () => {
     expect(media.selectedVideoInput).toBe('camera-1')
   })
 
+  it('falls back to the first available device when a selected device disappears', () => {
+    media.setDevices(
+      [
+        { deviceId: 'mic-1', label: 'Mic 1' },
+        { deviceId: 'mic-2', label: 'Mic 2' }
+      ],
+      [
+        { deviceId: 'speaker-1', label: 'Speaker 1' },
+        { deviceId: 'speaker-2', label: 'Speaker 2' }
+      ],
+      [
+        { deviceId: 'camera-1', label: 'Camera 1' },
+        { deviceId: 'camera-2', label: 'Camera 2' }
+      ]
+    )
+
+    media.setSelectedAudioInput('mic-2')
+    media.setSelectedAudioOutput('speaker-2')
+    media.setSelectedVideoInput('camera-2')
+
+    media.setDevices(
+      [{ deviceId: 'mic-1', label: 'Mic 1' }],
+      [{ deviceId: 'speaker-1', label: 'Speaker 1' }],
+      [{ deviceId: 'camera-1', label: 'Camera 1' }]
+    )
+
+    expect(media.selectedAudioInput).toBe('mic-1')
+    expect(media.selectedAudioOutput).toBe('speaker-1')
+    expect(media.selectedVideoInput).toBe('camera-1')
+  })
+
   it('enumerates devices into categorized lists', async () => {
     const originalNavigator = globalThis.navigator
     Object.defineProperty(globalThis, 'navigator', {

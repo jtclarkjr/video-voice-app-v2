@@ -24,7 +24,13 @@
     handleOffer
   } from '$lib/webrtc/negotiation'
   import { markPeerScreenSharing } from '$lib/webrtc/screen-share-tracks'
-  import { getUserMedia } from '$lib/webrtc/shared'
+  import {
+    acquireUserMedia,
+    getLocalStream,
+    getUserMedia,
+    replaceLocalTracks,
+    streamHasLiveTrack
+  } from '$lib/webrtc/shared'
   import type { SignalHandlers } from '$lib/signaling/types'
 
   let {
@@ -42,9 +48,50 @@
   let error = $state<string | null>(null)
   let layoutHost = $state<HTMLDivElement | null>(null)
   let sidePanelHeight = $state<number | null>(null)
+  let isMounted = false
+  let reconnectAttemptToken = 0
+
+  function logMediaError(context: string, cause: unknown) {
+    console.warn(`[call-room] ${context}`, cause)
+  }
+
+  function shouldReconnectLocalMedia() {
+    const stream = getLocalStream()
+    if (!stream) {
+      return true
+    }
+
+    return !streamHasLiveTrack(stream, 'audio') || !streamHasLiveTrack(stream, 'video')
+  }
 
   onMount(() => {
     let destroyed = false
+    isMounted = true
+
+    const handleDeviceChange = async () => {
+      await media.enumerateDevices()
+
+      if (!shouldReconnectLocalMedia()) {
+        return
+      }
+
+      const attemptToken = ++reconnectAttemptToken
+
+      try {
+        const stream = await acquireUserMedia()
+        if (!isMounted || destroyed || attemptToken !== reconnectAttemptToken) {
+          for (const track of stream.getTracks()) {
+            track.stop()
+          }
+          return
+        }
+
+        await replaceLocalTracks(stream)
+        media.setLocalStream(stream)
+      } catch (cause) {
+        logMediaError('Failed to recover local media after device change.', cause)
+      }
+    }
 
     const init = async () => {
       connection.setPhase('connecting')
@@ -55,7 +102,8 @@
         const stream = await getUserMedia()
         media.setLocalStream(stream)
         await media.enumerateDevices()
-      } catch {
+      } catch (cause) {
+        logMediaError('Failed to acquire initial local media.', cause)
         error = 'Could not access camera or microphone. Please check permissions.'
         return
       }
@@ -119,10 +167,14 @@
       connect(roomId, displayName, handlers)
     }
 
+    navigator.mediaDevices.addEventListener('devicechange', handleDeviceChange)
     void init()
 
     return () => {
       destroyed = true
+      isMounted = false
+      reconnectAttemptToken += 1
+      navigator.mediaDevices.removeEventListener('devicechange', handleDeviceChange)
       disconnect()
       closeAll()
       audioLevels.stop()

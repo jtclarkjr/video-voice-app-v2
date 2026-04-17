@@ -7,6 +7,17 @@ import {
 
 let state = $state<MediaState>(createMediaState())
 
+function resolveSelectedDevice(
+  selectedDeviceId: string,
+  devices: MediaDeviceOption[]
+) {
+  if (selectedDeviceId && devices.some((device) => device.deviceId === selectedDeviceId)) {
+    return selectedDeviceId
+  }
+
+  return devices[0]?.deviceId || ''
+}
+
 export const media = {
   get localStream() {
     return state.localStream
@@ -119,12 +130,9 @@ export const media = {
     state.audioInputs = audioInputs
     state.audioOutputs = audioOutputs
     state.videoInputs = videoInputs
-    state.selectedAudioInput =
-      state.selectedAudioInput || audioInputs[0]?.deviceId || ''
-    state.selectedAudioOutput =
-      state.selectedAudioOutput || audioOutputs[0]?.deviceId || ''
-    state.selectedVideoInput =
-      state.selectedVideoInput || videoInputs[0]?.deviceId || ''
+    state.selectedAudioInput = resolveSelectedDevice(state.selectedAudioInput, audioInputs)
+    state.selectedAudioOutput = resolveSelectedDevice(state.selectedAudioOutput, audioOutputs)
+    state.selectedVideoInput = resolveSelectedDevice(state.selectedVideoInput, videoInputs)
   },
   setSelectedAudioInput(deviceId: string) {
     state.selectedAudioInput = deviceId

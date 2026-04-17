@@ -20,6 +20,30 @@ export function setLocalStreamRef(stream: MediaStream | null) {
   localStream = stream
 }
 
+function getTrackByKind(stream: MediaStream | null, kind: 'audio' | 'video') {
+  if (!stream) {
+    return null
+  }
+
+  return kind === 'audio'
+    ? (stream.getAudioTracks()[0] ?? null)
+    : (stream.getVideoTracks()[0] ?? null)
+}
+
+export function streamHasLiveTrack(
+  stream: MediaStream | null,
+  kind: 'audio' | 'video'
+) {
+  if (!stream) {
+    return false
+  }
+
+  const tracks =
+    kind === 'audio' ? stream.getAudioTracks() : stream.getVideoTracks()
+
+  return tracks.some((track) => track.readyState === 'live')
+}
+
 function buildUserMediaConstraints(): MediaStreamConstraints {
   const audio: MediaTrackConstraints = {
     echoCancellation: media.echoCancellation,
@@ -39,10 +63,8 @@ function buildUserMediaConstraints(): MediaStreamConstraints {
   return { audio, video }
 }
 
-export async function getUserMedia(): Promise<MediaStream> {
-  const stream = await navigator.mediaDevices.getUserMedia(
-    buildUserMediaConstraints()
-  )
+export async function acquireUserMedia(): Promise<MediaStream> {
+  const stream = await navigator.mediaDevices.getUserMedia(buildUserMediaConstraints())
 
   for (const track of stream.getAudioTracks()) {
     track.enabled = media.isMicOn
@@ -52,6 +74,36 @@ export async function getUserMedia(): Promise<MediaStream> {
     track.enabled = media.isCameraOn
   }
 
+  return stream
+}
+
+export async function getUserMedia(): Promise<MediaStream> {
+  const stream = await acquireUserMedia()
   localStream = stream
   return stream
+}
+
+export async function replaceLocalTracks(stream: MediaStream) {
+  const previousStream = localStream
+
+  for (const [, pc] of peerConnections) {
+    for (const kind of ['audio', 'video'] as const) {
+      const nextTrack = getTrackByKind(stream, kind)
+      const sender = pc.getSenders().find((candidate) => candidate.track?.kind === kind)
+
+      if (sender) {
+        await sender.replaceTrack(nextTrack)
+      } else if (nextTrack) {
+        pc.addTrack(nextTrack, stream)
+      }
+    }
+  }
+
+  localStream = stream
+
+  if (previousStream) {
+    for (const track of previousStream.getTracks()) {
+      track.stop()
+    }
+  }
 }
