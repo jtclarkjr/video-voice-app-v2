@@ -1,0 +1,13 @@
+diff --git a/src/exports/vite/index.js b/src/exports/vite/index.js
+index fe829e73e240d283f9f7557ffc60ebfe6973b1b6..44043b23fc7b56228a52fbc7d46713c83725e769 100644
+--- a/src/exports/vite/index.js
++++ b/src/exports/vite/index.js
+@@ -575,7 +575,7 @@ async function kit({ svelte_config }) {
+ 		enforce: 'pre',
+ 
+ 		async resolveId(id, importer, options) {
+-			if (importer && !importer.endsWith('index.html')) {
++			if (importer && !importer.endsWith('index.html') && !importer.startsWith(normalized_node_modules)) {
+ 				const resolved = await this.resolve(id, importer, { ...options, skipSelf: true });
+ 
+ 				if (resolved) {

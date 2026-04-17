@@ -27,6 +27,9 @@
       },
     },
   },
+  "patchedDependencies": {
+    "@sveltejs/kit@2.57.1": "patches/@sveltejs%2Fkit@2.57.1.patch",
+  },
   "overrides": {
     "cookie": ">=0.7.0",
     "vite": "npm:@voidzero-dev/vite-plus-core@latest",
