@@ -15,7 +15,7 @@ export default defineConfig({
     trailingComma: 'none',
     proseWrap: 'always',
     sortPackageJson: false,
-    ignorePatterns: []
+    ignorePatterns: ['*.md']
   },
   lint: {
     rules: {

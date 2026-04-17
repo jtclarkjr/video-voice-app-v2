@@ -1,45 +1,64 @@
-# sv
+# Video Voice App V2
 
-Everything you need to build a Svelte project, powered by
-[`sv`](https://github.com/sveltejs/cli).
+A WebRTC video calling app built with SvelteKit 2, Svelte 5, and Vite+. Users can create or join
+rooms from a lobby and participate in multi-party video calls with screen sharing, chat, and
+adaptive layouts.
 
-## Creating a project
+Backend is handled by a separate signaling and room service.
 
-If you're seeing this, you've probably already done this step. Congrats!
+## Stack
 
-```sh
-# create a new project
-npx sv create my-app
-```
+- [Svelte 5](https://svelte.dev/)
+- [SvelteKit 2](https://svelte.dev/docs/kit)
+- [Vite+](https://viteplus.dev/) toolchain
+- [Tailwind CSS v4](https://tailwindcss.com/)
+- Native [WebRTC](https://webrtc.org/) media, data channels, and screen sharing
+- [Zod](https://zod.dev/) for validation
 
-To recreate this project with the same configuration:
+## Features
 
-```sh
-# recreate this project
-bun x sv@0.15.0 create --template minimal --types ts --install bun video-voice-app-v2
-```
+- Lobby with active room list and live room updates
+- Create-room and join-room flows
+- Pre-join screen with device selection and mic level preview
+- Multi-party audio/video calls
+- Screen sharing
+- In-call chat over WebRTC data channels
+- Gallery and speaker layouts
+- Reconnection handling and connection quality monitoring
+- Theme support
 
-## Developing
+## Getting Started
 
-Once you've created a project and installed dependencies with `npm install` (or
-`pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
+Install `vp` from the [Vite+ site](https://viteplus.dev/):
 
 ```sh
-npm run build
+curl -fsSL https://vite.plus | bash
 ```
 
-You can preview the production build with `npm run preview`.
+Then install dependencies and start the dev server:
 
-> To deploy your app, you may need to install an
-> [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+```sh
+vp install
+vp config
+vp dev
+```
+
+## Commands
+
+Use `vp` as the common command interface for normal project workflows:
+
+```sh
+vp install       # install dependencies
+vp dev           # run the dev server
+vp check         # project checks through Vite+
+vp test          # run tests
+vp build         # build for production
+vp preview       # preview the production build
+```
+
+For Svelte file checks and formatting, use the project's Svelte-specific commands:
+
+```sh
+vp dlx sv check
+vp run fmt:sv
+```

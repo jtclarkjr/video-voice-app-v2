@@ -1,80 +1,80 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+  import { onMount } from 'svelte'
 
-	let {
-		open = false,
-		title = '',
-		eyebrow = 'Panel',
-		widthClass = 'max-w-lg',
-		onClose = () => {},
-		children
-	} = $props<{
-		open?: boolean;
-		title?: string;
-		eyebrow?: string;
-		widthClass?: string;
-		onClose?: () => void;
-		children?: () => unknown;
-	}>();
+  let {
+    open = false,
+    title = '',
+    eyebrow = 'Panel',
+    widthClass = 'max-w-lg',
+    onClose = () => {},
+    children
+  } = $props<{
+    open?: boolean
+    title?: string
+    eyebrow?: string
+    widthClass?: string
+    onClose?: () => void
+    children?: () => unknown
+  }>()
 
-	onMount(() => {
-		const onKeyDown = (event: KeyboardEvent) => {
-			if (event.key === 'Escape' && open) {
-				onClose();
-			}
-		};
+  onMount(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && open) {
+        onClose()
+      }
+    }
 
-		window.addEventListener('keydown', onKeyDown);
-		return () => window.removeEventListener('keydown', onKeyDown);
-	});
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  })
 
-	// Portal the modal to <body> so ancestors with `backdrop-filter`/`transform`
-	// don't constrain our `position: fixed` (which otherwise uses the ancestor as
-	// the containing block and pins the dialog inside the header).
-	function portal(node: HTMLElement) {
-		document.body.appendChild(node);
-		return {
-			destroy() {
-				if (node.parentNode) {
-					node.parentNode.removeChild(node);
-				}
-			}
-		};
-	}
+  // Portal the modal to <body> so ancestors with `backdrop-filter`/`transform`
+  // don't constrain our `position: fixed` (which otherwise uses the ancestor as
+  // the containing block and pins the dialog inside the header).
+  function portal(node: HTMLElement) {
+    document.body.appendChild(node)
+    return {
+      destroy() {
+        if (node.parentNode) {
+          node.parentNode.removeChild(node)
+        }
+      }
+    }
+  }
 </script>
 
 {#if open}
-	<div use:portal class="fixed inset-0 z-50 flex items-center justify-center p-4">
-		<button
-			type="button"
-			class="absolute inset-0 bg-black/45 backdrop-blur-sm"
-			onclick={onClose}
-			aria-label="Close dialog"
-		></button>
-		<div
-			class={`glass-card surface-border relative z-10 w-full rounded-[2rem] p-6 ${widthClass}`}
-			role="dialog"
-			aria-modal="true"
-			aria-label={title}
-		>
-			<div class="mb-5 flex items-start justify-between gap-4">
-				<div class="grid gap-1">
-					{#if eyebrow}
-						<p class="text-xs font-black uppercase tracking-[0.24em] text-primary">{eyebrow}</p>
-					{/if}
-					<h2 class="text-2xl font-bold text-foreground">{title}</h2>
-				</div>
-				<button
-					type="button"
-					class="flex size-10 items-center justify-center rounded-full bg-secondary text-lg text-secondary-foreground transition hover:scale-105"
-					onclick={onClose}
-					aria-label="Close dialog"
-				>
-					×
-				</button>
-			</div>
+  <div use:portal class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <button
+      type="button"
+      class="absolute inset-0 bg-black/45 backdrop-blur-sm"
+      onclick={onClose}
+      aria-label="Close dialog"
+    ></button>
+    <div
+      class={`glass-card surface-border relative z-10 w-full rounded-[2rem] p-6 ${widthClass}`}
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+    >
+      <div class="mb-5 flex items-start justify-between gap-4">
+        <div class="grid gap-1">
+          {#if eyebrow}
+            <p class="text-xs font-black uppercase tracking-[0.24em] text-primary">{eyebrow}</p>
+          {/if}
+          <h2 class="text-2xl font-bold text-foreground">{title}</h2>
+        </div>
+        <button
+          type="button"
+          class="flex size-10 items-center justify-center rounded-full bg-secondary text-lg text-secondary-foreground transition hover:scale-105"
+          onclick={onClose}
+          aria-label="Close dialog"
+        >
+          ×
+        </button>
+      </div>
 
-			{@render children?.()}
-		</div>
-	</div>
+      {@render children?.()}
+    </div>
+  </div>
 {/if}
