@@ -37,7 +37,7 @@
   }
 </script>
 
-<Popover open={popoverOpen} onOpenChange={(nextOpen) => (popoverOpen = nextOpen)} align="end">
+<Popover bind:open={popoverOpen} align="end">
   {#snippet trigger()}
     <button
       type="button"
@@ -227,4 +227,4 @@
   {/snippet}
 </Popover>
 
-<AuthDialog open={authDialogOpen} {authConfig} onClose={() => (authDialogOpen = false)} />
+<AuthDialog bind:open={authDialogOpen} {authConfig} />

@@ -2,25 +2,23 @@
   import { onMount } from 'svelte'
 
   let {
-    open = false,
+    open = $bindable(false),
     title = '',
     eyebrow = 'Panel',
     widthClass = 'max-w-lg',
-    onClose = () => {},
     children
   } = $props<{
     open?: boolean
     title?: string
     eyebrow?: string
     widthClass?: string
-    onClose?: () => void
     children?: () => unknown
   }>()
 
   onMount(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && open) {
-        onClose()
+        open = false
       }
     }
 
@@ -48,7 +46,7 @@
     <button
       type="button"
       class="absolute inset-0 bg-black/45 backdrop-blur-sm"
-      onclick={onClose}
+      onclick={() => (open = false)}
       aria-label="Close dialog"
     ></button>
     <div
@@ -67,7 +65,7 @@
         <button
           type="button"
           class="flex size-10 items-center justify-center rounded-full bg-secondary text-lg text-secondary-foreground transition hover:scale-105"
-          onclick={onClose}
+          onclick={() => (open = false)}
           aria-label="Close dialog"
         >
           ×

@@ -3,15 +3,13 @@
   import { cn } from '$lib/utils'
 
   let {
-    open = false,
+    open = $bindable(false),
     align = 'center',
-    onOpenChange = (_open: boolean) => {},
     trigger,
     children
   } = $props<{
     open?: boolean
     align?: 'start' | 'center' | 'end'
-    onOpenChange?: (open: boolean) => void
     trigger?: () => unknown
     children?: () => unknown
   }>()
@@ -24,13 +22,13 @@
         return
       }
       if (!root.contains(event.target as Node)) {
-        onOpenChange(false)
+        open = false
       }
     }
 
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onOpenChange(false)
+      if (event.key === 'Escape' && open) {
+        open = false
       }
     }
 

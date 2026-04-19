@@ -59,7 +59,7 @@
   }
 </script>
 
-<VoiceVideoSettingsDialog open={settingsOpen} onClose={() => (settingsOpen = false)} />
+<VoiceVideoSettingsDialog bind:open={settingsOpen} />
 
 <div class="flex items-center justify-center gap-2">
   <div class="flex items-center gap-0.5 rounded-full bg-secondary px-1 py-1">
@@ -80,11 +80,7 @@
       {/if}
     </button>
 
-    <Popover
-      open={micPopoverOpen}
-      onOpenChange={(nextOpen) => (micPopoverOpen = nextOpen)}
-      align="start"
-    >
+    <Popover bind:open={micPopoverOpen} align="start">
       {#snippet trigger()}
         <button
           type="button"
@@ -289,11 +285,7 @@
       {/if}
     </button>
 
-    <Popover
-      open={cameraPopoverOpen}
-      onOpenChange={(nextOpen) => (cameraPopoverOpen = nextOpen)}
-      align="start"
-    >
+    <Popover bind:open={cameraPopoverOpen} align="start">
       {#snippet trigger()}
         <button
           type="button"

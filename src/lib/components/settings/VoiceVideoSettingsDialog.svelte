@@ -3,7 +3,7 @@
   import { media } from '$lib/stores/media.svelte'
   import type { NoiseSuppression } from '$lib/types/media'
 
-  let { open = false, onClose = () => {} } = $props<{ open?: boolean; onClose?: () => void }>()
+  let { open = $bindable(false) } = $props<{ open?: boolean }>()
 
   let videoElement = $state<HTMLVideoElement | null>(null)
   let previewStream = $state<MediaStream | null>(null)
@@ -123,7 +123,7 @@
   }
 </script>
 
-<Modal {open} {onClose} title="Voice & Video" widthClass="max-w-2xl">
+<Modal bind:open title="Voice & Video" widthClass="max-w-2xl">
   <div class="grid gap-6">
     <div class="grid gap-4 md:grid-cols-2">
       <label class="grid gap-2">

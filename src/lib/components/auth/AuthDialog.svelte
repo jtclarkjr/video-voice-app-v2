@@ -6,14 +6,9 @@
 
   type AuthMode = 'sign-in' | 'sign-up'
 
-  let {
-    open = false,
-    authConfig,
-    onClose = () => {}
-  } = $props<{
+  let { open = $bindable(false), authConfig } = $props<{
     open?: boolean
     authConfig: AuthConfig
-    onClose?: () => void
   }>()
 
   let mode = $state<AuthMode>('sign-in')
@@ -61,7 +56,7 @@
           return
         }
 
-        onClose()
+        open = false
         return
       }
 
@@ -72,7 +67,7 @@
       }
 
       if (result.data?.session) {
-        onClose()
+        open = false
         return
       }
 
@@ -104,7 +99,7 @@
   )
 </script>
 
-<Modal {open} {onClose} title="Sign in" eyebrow="" widthClass="max-w-md">
+<Modal bind:open title="Sign in" eyebrow="" widthClass="max-w-md">
   {#if !authConfig.configured}
     <p class="text-sm text-muted-foreground">
       Supabase auth is not configured for this environment.

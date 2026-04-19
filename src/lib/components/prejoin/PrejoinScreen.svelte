@@ -530,5 +530,5 @@
     </a>
   {/if}
 
-  <AuthDialog open={authDialogOpen} {authConfig} onClose={() => (authDialogOpen = false)} />
+  <AuthDialog bind:open={authDialogOpen} {authConfig} />
 </div>
