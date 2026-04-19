@@ -2,6 +2,7 @@
   import Modal from '$lib/components/shared/Modal.svelte'
   import { media } from '$lib/stores/media.svelte'
   import type { NoiseSuppression } from '$lib/types/media'
+  import { bestEffort } from '$lib/utils'
 
   let { open = $bindable(false) } = $props<{ open?: boolean }>()
 
@@ -19,16 +20,16 @@
     }
 
     void (async () => {
-      try {
-        const tempStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+      const tempStream = await bestEffort(
+        navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+      )
+      if (tempStream) {
         for (const track of tempStream.getTracks()) {
           track.stop()
         }
-      } catch {
-        // Permissions denied.
       }
 
-      await media.enumerateDevices()
+      await bestEffort(media.enumerateDevices())
     })()
   })
 

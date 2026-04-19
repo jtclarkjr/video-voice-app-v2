@@ -21,6 +21,28 @@ let pollTimer: ReturnType<typeof setInterval> | null = null
 let localId: string | null = null
 let localSpeaking = $state(false)
 
+function createAudioTracker(stream: MediaStream): AudioTracker | null {
+  try {
+    const context = new AudioContext()
+    const source = context.createMediaStreamSource(stream)
+    const analyser = context.createAnalyser()
+    analyser.fftSize = 256
+    source.connect(analyser)
+
+    return {
+      context,
+      source,
+      analyser,
+      data: new Uint8Array(analyser.frequencyBinCount) as Uint8Array<ArrayBuffer>,
+      speakingFrames: 0,
+      silenceFrames: 0,
+      isSpeaking: false
+    }
+  } catch {
+    return null
+  }
+}
+
 function sampleAll() {
   let highestLevel = 0
   let highestId: string | null = null
@@ -102,27 +124,12 @@ export const audioLevels = {
       return
     }
 
-    try {
-      const context = new AudioContext()
-      const source = context.createMediaStreamSource(stream)
-      const analyser = context.createAnalyser()
-      analyser.fftSize = 256
-      source.connect(analyser)
-
-      trackers.set(id, {
-        context,
-        source,
-        analyser,
-        data: new Uint8Array(
-          analyser.frequencyBinCount
-        ) as Uint8Array<ArrayBuffer>,
-        speakingFrames: 0,
-        silenceFrames: 0,
-        isSpeaking: false
-      })
-    } catch {
-      // AudioContext creation can fail in some environments.
+    const tracker = createAudioTracker(stream)
+    if (!tracker) {
+      return
     }
+
+    trackers.set(id, tracker)
   },
   untrack(id: string) {
     const tracker = trackers.get(id)

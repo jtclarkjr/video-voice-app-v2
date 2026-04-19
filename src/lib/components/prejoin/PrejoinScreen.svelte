@@ -7,6 +7,7 @@
   import type { AuthConfig } from '$lib/server/auth-config'
   import { session } from '$lib/stores/session.svelte'
   import { media } from '$lib/stores/media.svelte'
+  import { bestEffort } from '$lib/utils'
 
   const ACCESS_ERROR_MESSAGE = 'Could not access camera/microphone. Please check permissions.'
 
@@ -78,11 +79,7 @@
   }
 
   async function syncDevices() {
-    try {
-      await media.enumerateDevices()
-    } catch {
-      // Ignore device enumeration failures and keep the current UI state.
-    }
+    await bestEffort(media.enumerateDevices())
   }
 
   function hasLiveTrack(kind: 'audio' | 'video') {

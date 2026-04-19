@@ -21,6 +21,7 @@ import {
   supabase
 } from '$lib/auth/session-store'
 import type { Session, SessionPayload, User } from '$lib/auth/types'
+import { bestEffort } from '$lib/utils'
 
 let initializeSessionPromise: Promise<Session | null> | null = null
 
@@ -191,6 +192,13 @@ const ensureInitializedSession = async () => {
   return initializeSessionPromise
 }
 
+const finalizeSignOut = () => {
+  const guestSession = createGuestSession()
+  setCurrentSession(guestSession)
+  redirectHomeIfInCallFlow()
+  return guestSession
+}
+
 export const isAnonymousUser = (user: User | null | undefined) =>
   Boolean(
     isGuestUser(user) ||
@@ -321,25 +329,15 @@ export const signInWithOAuth = async (provider: OAuthProvider) => {
 
 export const signOut = async () => {
   if (!hasSupabaseConfig || !supabase) {
-    const guestSession = createGuestSession()
-    setCurrentSession(guestSession)
-    redirectHomeIfInCallFlow()
-    return guestSession
+    return finalizeSignOut()
   }
 
   const accessToken =
     getCurrentSession()?.access_token ?? loadStoredSession()?.access_token
   if (accessToken) {
     supabase.setToken(accessToken)
-    try {
-      await supabase.signOut('global')
-    } catch {
-      // Ignore remote sign-out failures and clear local state anyway.
-    }
+    await bestEffort(supabase.signOut('global'))
   }
 
-  const guestSession = createGuestSession()
-  setCurrentSession(guestSession)
-  redirectHomeIfInCallFlow()
-  return guestSession
+  return finalizeSignOut()
 }

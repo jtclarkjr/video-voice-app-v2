@@ -1,5 +1,6 @@
 import { participants } from '$lib/stores/participants.svelte'
 import type { NetworkQuality } from '$lib/types/connection'
+import { bestEffort } from '$lib/utils'
 import { peerConnections } from '$lib/webrtc/shared'
 
 const POLL_INTERVAL = 5000
@@ -65,91 +66,91 @@ async function pollStats() {
       continue
     }
 
-    try {
-      const stats = await pc.getStats()
-      let rtt = 0
-      let packetsLost = 0
-      let packetsSent = 0
-      let bytesSent = 0
-      let bytesReceived = 0
-
-      stats.forEach((report) => {
-        if (report.type === 'candidate-pair' && report.state === 'succeeded') {
-          rtt = report.currentRoundTripTime ?? rtt
-        }
-        if (report.type === 'outbound-rtp' && report.kind === 'video') {
-          bytesSent = report.bytesSent ?? bytesSent
-          packetsSent = report.packetsSent ?? packetsSent
-        }
-        if (report.type === 'inbound-rtp' && report.kind === 'video') {
-          bytesReceived = report.bytesReceived ?? bytesReceived
-        }
-        if (report.type === 'remote-inbound-rtp' && report.kind === 'video') {
-          packetsLost = report.packetsLost ?? packetsLost
-        }
-      })
-
-      let state = peerStates.get(peerId)
-      if (!state) {
-        peerStates.set(peerId, {
-          currentQuality: 'unknown',
-          consecutiveBetter: 0,
-          consecutiveWorse: 0,
-          lastBytesSent: bytesSent,
-          lastBytesReceived: bytesReceived,
-          lastPacketsLost: packetsLost,
-          lastPacketsSent: packetsSent,
-          lastTimestamp: Date.now()
-        })
-        continue
-      }
-
-      const deltaPacketsLost = packetsLost - state.lastPacketsLost
-      const deltaPacketsSent = packetsSent - state.lastPacketsSent
-      const lossRate =
-        deltaPacketsSent > 0 ? deltaPacketsLost / deltaPacketsSent : 0
-
-      const measuredQuality = computeQuality(rtt, lossRate)
-      const currentIdx = QUALITY_ORDER.indexOf(
-        state.currentQuality === 'unknown' ? 'good' : state.currentQuality
-      )
-      const measuredIdx = QUALITY_ORDER.indexOf(measuredQuality)
-
-      if (measuredIdx > currentIdx) {
-        state.consecutiveWorse++
-        state.consecutiveBetter = 0
-        if (state.consecutiveWorse >= DOWNGRADE_THRESHOLD) {
-          state.currentQuality = measuredQuality
-          state.consecutiveWorse = 0
-          participants.setNetworkQuality(peerId, measuredQuality)
-          void applyQualityProfile(pc, measuredQuality)
-        }
-      } else if (measuredIdx < currentIdx) {
-        state.consecutiveBetter++
-        state.consecutiveWorse = 0
-        if (state.consecutiveBetter >= UPGRADE_THRESHOLD) {
-          state.currentQuality = measuredQuality
-          state.consecutiveBetter = 0
-          participants.setNetworkQuality(peerId, measuredQuality)
-          void applyQualityProfile(pc, measuredQuality)
-        }
-      } else {
-        state.consecutiveBetter = 0
-        state.consecutiveWorse = 0
-        if (state.currentQuality === 'unknown') {
-          state.currentQuality = measuredQuality
-          participants.setNetworkQuality(peerId, measuredQuality)
-        }
-      }
-
-      state.lastBytesSent = bytesSent
-      state.lastBytesReceived = bytesReceived
-      state.lastPacketsLost = packetsLost
-      state.lastPacketsSent = packetsSent
-      state.lastTimestamp = Date.now()
-    } catch {
-      // Stats collection can fail if peer connection is closing.
+    const stats = await bestEffort(pc.getStats())
+    if (!stats) {
+      continue
     }
+
+    let rtt = 0
+    let packetsLost = 0
+    let packetsSent = 0
+    let bytesSent = 0
+    let bytesReceived = 0
+
+    stats.forEach((report) => {
+      if (report.type === 'candidate-pair' && report.state === 'succeeded') {
+        rtt = report.currentRoundTripTime ?? rtt
+      }
+      if (report.type === 'outbound-rtp' && report.kind === 'video') {
+        bytesSent = report.bytesSent ?? bytesSent
+        packetsSent = report.packetsSent ?? packetsSent
+      }
+      if (report.type === 'inbound-rtp' && report.kind === 'video') {
+        bytesReceived = report.bytesReceived ?? bytesReceived
+      }
+      if (report.type === 'remote-inbound-rtp' && report.kind === 'video') {
+        packetsLost = report.packetsLost ?? packetsLost
+      }
+    })
+
+    let state = peerStates.get(peerId)
+    if (!state) {
+      peerStates.set(peerId, {
+        currentQuality: 'unknown',
+        consecutiveBetter: 0,
+        consecutiveWorse: 0,
+        lastBytesSent: bytesSent,
+        lastBytesReceived: bytesReceived,
+        lastPacketsLost: packetsLost,
+        lastPacketsSent: packetsSent,
+        lastTimestamp: Date.now()
+      })
+      continue
+    }
+
+    const deltaPacketsLost = packetsLost - state.lastPacketsLost
+    const deltaPacketsSent = packetsSent - state.lastPacketsSent
+    const lossRate =
+      deltaPacketsSent > 0 ? deltaPacketsLost / deltaPacketsSent : 0
+
+    const measuredQuality = computeQuality(rtt, lossRate)
+    const currentIdx = QUALITY_ORDER.indexOf(
+      state.currentQuality === 'unknown' ? 'good' : state.currentQuality
+    )
+    const measuredIdx = QUALITY_ORDER.indexOf(measuredQuality)
+
+    if (measuredIdx > currentIdx) {
+      state.consecutiveWorse++
+      state.consecutiveBetter = 0
+      if (state.consecutiveWorse >= DOWNGRADE_THRESHOLD) {
+        state.currentQuality = measuredQuality
+        state.consecutiveWorse = 0
+        participants.setNetworkQuality(peerId, measuredQuality)
+        void applyQualityProfile(pc, measuredQuality)
+      }
+    } else if (measuredIdx < currentIdx) {
+      state.consecutiveBetter++
+      state.consecutiveWorse = 0
+      if (state.consecutiveBetter >= UPGRADE_THRESHOLD) {
+        state.currentQuality = measuredQuality
+        state.consecutiveBetter = 0
+        participants.setNetworkQuality(peerId, measuredQuality)
+        void applyQualityProfile(pc, measuredQuality)
+      }
+    } else {
+      state.consecutiveBetter = 0
+      state.consecutiveWorse = 0
+      if (state.currentQuality === 'unknown') {
+        state.currentQuality = measuredQuality
+        participants.setNetworkQuality(peerId, measuredQuality)
+      }
+    }
+
+    state.lastBytesSent = bytesSent
+    state.lastBytesReceived = bytesReceived
+    state.lastPacketsLost = packetsLost
+    state.lastPacketsSent = packetsSent
+    state.lastTimestamp = Date.now()
   }
 }
 
@@ -175,10 +176,8 @@ async function applyQualityProfile(
       encoding.scaleResolutionDownBy = profile.scaleResolutionDownBy
     }
 
-    try {
-      await sender.setParameters(params)
-    } catch {
-      // setParameters can fail if the sender is in a bad state.
+    if ((await bestEffort(sender.setParameters(params))) === null) {
+      continue
     }
   }
 }

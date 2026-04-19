@@ -3,6 +3,7 @@ import {
   sendScreenShareStop
 } from '$lib/signaling/connection'
 import { screenShare } from '$lib/stores/screen-share.svelte'
+import { bestEffort } from '$lib/utils'
 import {
   addScreenShareTracks,
   removeScreenShareTracks
@@ -15,26 +16,32 @@ export async function startScreenShare() {
     return
   }
 
-  try {
-    const stream = await navigator.mediaDevices.getDisplayMedia({
+  const stream = await bestEffort(
+    navigator.mediaDevices.getDisplayMedia({
       video: true,
       audio: true
     })
+  )
+  if (!stream) {
+    return
+  }
 
-    activeStream = stream
-    screenShare.setLocal(stream)
-    sendScreenShareStart(stream.id)
-
-    await addScreenShareTracks(stream)
-
-    const videoTrack = stream.getVideoTracks()[0]
-    if (videoTrack) {
-      videoTrack.onended = () => {
-        void stopScreenShare()
-      }
+  if ((await bestEffort(addScreenShareTracks(stream))) === null) {
+    for (const track of stream.getTracks()) {
+      track.stop()
     }
-  } catch {
-    // User cancelled or getDisplayMedia not supported.
+    return
+  }
+
+  activeStream = stream
+  screenShare.setLocal(stream)
+  sendScreenShareStart(stream.id)
+
+  const videoTrack = stream.getVideoTracks()[0]
+  if (videoTrack) {
+    videoTrack.onended = () => {
+      void stopScreenShare()
+    }
   }
 }
 

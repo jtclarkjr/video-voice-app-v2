@@ -1,4 +1,5 @@
 import { sendOffer } from '$lib/signaling/connection'
+import { bestEffort } from '$lib/utils'
 import { disconnectTimers, peerConnections } from '$lib/webrtc/shared'
 
 export async function attemptIceRestart(peerId: string) {
@@ -7,14 +8,19 @@ export async function attemptIceRestart(peerId: string) {
     return
   }
 
-  try {
-    pc.restartIce()
-    const offer = await pc.createOffer({ iceRestart: true })
-    await pc.setLocalDescription(offer)
-    sendOffer(peerId, pc.localDescription!)
-  } catch {
-    // ICE restart failed — peer may have left
+  const localDescription = await bestEffort(
+    (async () => {
+      pc.restartIce()
+      const offer = await pc.createOffer({ iceRestart: true })
+      await pc.setLocalDescription(offer)
+      return pc.localDescription
+    })()
+  )
+  if (!localDescription) {
+    return
   }
+
+  sendOffer(peerId, localDescription)
 }
 
 export function clearDisconnectTimer(peerId: string) {

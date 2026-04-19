@@ -2,6 +2,18 @@ import { chat } from '$lib/stores/chat.svelte'
 import type { ChatMessage } from '$lib/types/chat'
 import { dataChannels } from '$lib/webrtc/shared'
 
+function parseChatMessage(payload: unknown): ChatMessage | null {
+  if (typeof payload !== 'string') {
+    return null
+  }
+
+  try {
+    return JSON.parse(payload) as ChatMessage
+  } catch {
+    return null
+  }
+}
+
 export function setupDataChannel(peerId: string, pc: RTCPeerConnection) {
   const channel = pc.createDataChannel('chat', { ordered: true })
   registerChannel(peerId, channel)
@@ -17,13 +29,9 @@ function registerChannel(peerId: string, channel: RTCDataChannel) {
   }
 
   channel.onmessage = (event) => {
-    try {
-      const msg: ChatMessage = JSON.parse(event.data)
-      if (msg.text) {
-        chat.addMessage(msg)
-      }
-    } catch {
-      // Ignore malformed messages
+    const msg = parseChatMessage(event.data)
+    if (msg?.text) {
+      chat.addMessage(msg)
     }
   }
 
