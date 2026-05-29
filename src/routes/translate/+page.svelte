@@ -40,14 +40,10 @@
   let translatedVoiceMuted = $state(false)
   let voicePlaybackBlocked = $state(false)
 
-  const starting = $derived(
-    status === 'requesting-microphone' || status === 'connecting'
-  )
+  const starting = $derived(status === 'requesting-microphone' || status === 'connecting')
   const active = $derived(translationSession !== null && status === 'listening')
   const voiceControlsVisible = $derived(active || starting)
-  const selectedLanguageLabel = $derived(
-    getTranslationLanguageLabel(targetLanguage)
-  )
+  const selectedLanguageLabel = $derived(getTranslationLanguageLabel(targetLanguage))
 
   onDestroy(() => {
     translationSession?.stop()
@@ -95,10 +91,7 @@
       translationSession = null
       status = 'idle'
       resetTranslatedAudio()
-      error =
-        cause instanceof Error
-          ? cause.message
-          : 'Could not start live translation.'
+      error = cause instanceof Error ? cause.message : 'Could not start live translation.'
     }
   }
 
@@ -139,11 +132,7 @@
   }
 
   async function playTranslatedAudio() {
-    if (
-      !translatedAudioElement ||
-      !translatedAudioStream ||
-      translatedVoiceMuted
-    ) {
+    if (!translatedAudioElement || !translatedAudioStream || translatedVoiceMuted) {
       return
     }
 
@@ -216,10 +205,10 @@
 <section class="grid gap-4 pb-24 sm:gap-6 lg:pb-0">
   <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
     <div class="grid gap-2 sm:gap-3">
-      <p class="m-0 text-sm font-bold uppercase tracking-[0.2em] text-primary">
-        Live Translation
-      </p>
-      <h1 class="m-0 text-3xl leading-none font-semibold tracking-tight text-foreground sm:text-5xl">
+      <p class="m-0 text-sm font-bold uppercase tracking-[0.2em] text-primary">Live Translation</p>
+      <h1
+        class="m-0 text-3xl leading-none font-semibold tracking-tight text-foreground sm:text-5xl"
+      >
         Translate Speech
       </h1>
     </div>
@@ -235,7 +224,9 @@
   </div>
 
   {#if session.isAnonymous}
-    <div class="surface-card grid min-h-[22rem] place-items-center p-5 text-center sm:min-h-[28rem] sm:p-6">
+    <div
+      class="surface-card grid min-h-[22rem] place-items-center p-5 text-center sm:min-h-[28rem] sm:p-6"
+    >
       <div class="grid max-w-md gap-4">
         <div
           class="mx-auto flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary"
@@ -305,10 +296,14 @@
             </div>
 
             <div class="hidden gap-2 sm:grid">
-              <p class="m-0 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              <p
+                class="m-0 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground"
+              >
                 Source
               </p>
-              <div class="flex min-h-11 items-center rounded-md border border-border/70 bg-background px-3 py-2 text-sm text-foreground">
+              <div
+                class="flex min-h-11 items-center rounded-md border border-border/70 bg-background px-3 py-2 text-sm text-foreground"
+              >
                 Auto-detect
               </div>
             </div>
@@ -385,7 +380,9 @@
           </div>
 
           {#if error}
-            <p class="m-0 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            <p
+              class="m-0 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+            >
               {error}
             </p>
           {/if}
@@ -436,11 +433,15 @@
           aria-live="polite"
         >
           {#if transcript}
-            <p class="m-0 break-words whitespace-pre-wrap text-2xl leading-relaxed text-foreground sm:text-4xl">
+            <p
+              class="m-0 break-words whitespace-pre-wrap text-2xl leading-relaxed text-foreground sm:text-4xl"
+            >
               {transcript}
             </p>
           {:else}
-            <div class="flex min-h-[16rem] items-center justify-center text-center sm:min-h-[20rem]">
+            <div
+              class="flex min-h-[16rem] items-center justify-center text-center sm:min-h-[20rem]"
+            >
               <p class="m-0 text-base text-muted-foreground">
                 {active || starting ? 'Listening...' : 'Ready'}
               </p>

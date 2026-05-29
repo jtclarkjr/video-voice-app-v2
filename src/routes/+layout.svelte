@@ -27,8 +27,12 @@
 
 <div class="min-h-screen">
   <header class="relative z-20 border-b border-border/70 bg-background/85 backdrop-blur">
-    <div class="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:gap-4 sm:px-6 sm:py-4">
-      <nav class="flex min-w-0 items-center gap-3 text-sm font-bold tracking-[0.02em] text-foreground sm:gap-4">
+    <div
+      class="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:gap-4 sm:px-6 sm:py-4"
+    >
+      <nav
+        class="flex min-w-0 items-center gap-3 text-sm font-bold tracking-[0.02em] text-foreground sm:gap-4"
+      >
         <a href="/">Home</a>
         <a href="/translate">Translate</a>
       </nav>
