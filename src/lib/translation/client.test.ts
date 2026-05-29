@@ -1,14 +1,20 @@
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
-import { createGuestSession, setCurrentSession } from '$lib/auth/session-store'
+import { getAccessToken } from '$lib/auth/session-service'
 import {
   createTranslationClientSecret,
-  fetchTranslationClientSecret
+  fetchTranslationClientSecret,
+  startLiveTranslationSession
 } from '$lib/translation/client'
+
+vi.mock('$lib/auth/session-service', () => ({
+  getAccessToken: vi.fn()
+}))
 
 describe('translation client secret requests', () => {
   afterEach(() => {
     vi.restoreAllMocks()
-    setCurrentSession(createGuestSession(), false)
+    vi.unstubAllGlobals()
+    vi.mocked(getAccessToken).mockReset()
   })
 
   it('posts the selected language with the bearer token', async () => {
@@ -60,6 +66,8 @@ describe('translation client secret requests', () => {
   })
 
   it('requires an authenticated access token', async () => {
+    vi.mocked(getAccessToken).mockResolvedValue(null)
+
     await expect(createTranslationClientSecret('es')).rejects.toThrow(
       'Sign in to start translation.'
     )
@@ -75,4 +83,139 @@ describe('translation client secret requests', () => {
       fetchTranslationClientSecret('es', 'access-token', 'http://localhost:8080')
     ).rejects.toThrow('Live translation is not configured.')
   })
+
+  it('passes translated remote audio streams to the caller and cleans them up', async () => {
+    const localTrackStop = vi.fn()
+    const remoteTrackStop = vi.fn()
+    const dataChannelClose = vi.fn()
+    const localTrack = createMockTrack(localTrackStop)
+    const remoteTrack = createMockTrack(remoteTrackStop)
+    const localStream = createMockStream([localTrack])
+    const remoteStream = createMockStream([remoteTrack])
+    const dataChannel = createMockDataChannel(dataChannelClose)
+    const peerConnections: MockPeerConnection[] = []
+
+    vi.mocked(getAccessToken).mockResolvedValue('access-token')
+    vi.stubGlobal('window', {
+      location: {
+        hostname: 'localhost',
+        protocol: 'http:'
+      }
+    })
+    vi.stubGlobal('navigator', {
+      mediaDevices: {
+        getUserMedia: vi.fn(async () => localStream)
+      }
+    })
+    vi.stubGlobal(
+      'RTCPeerConnection',
+      createMockPeerConnectionConstructor(peerConnections, dataChannel, [
+        remoteTrack
+      ])
+    )
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = getFetchURL(input)
+        if (url.endsWith('/translation/client-secret')) {
+          return new Response(JSON.stringify({ value: 'client-secret' }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' }
+          })
+        }
+
+        return new Response('answer-sdp', {
+          status: 200,
+          headers: { 'Content-Type': 'application/sdp' }
+        })
+      })
+    )
+
+    const onTranslatedAudioStream = vi.fn()
+    const session = await startLiveTranslationSession({
+      targetLanguage: 'es',
+      onTranscriptDelta: vi.fn(),
+      onTranslatedAudioStream
+    })
+
+    peerConnections[0].ontrack?.({
+      streams: [remoteStream],
+      track: remoteTrack
+    } as unknown as RTCTrackEvent)
+
+    expect(onTranslatedAudioStream).toHaveBeenCalledWith(remoteStream)
+
+    session.stop()
+
+    expect(dataChannelClose).toHaveBeenCalled()
+    expect(peerConnections[0].close).toHaveBeenCalled()
+    expect(localTrackStop).toHaveBeenCalled()
+    expect(remoteTrackStop).toHaveBeenCalled()
+  })
 })
+
+function getFetchURL(input: RequestInfo | URL) {
+  if (typeof input === 'string') {
+    return input
+  }
+  if (input instanceof URL) {
+    return input.href
+  }
+  return input.url
+}
+
+function createMockTrack(stop: ReturnType<typeof vi.fn>) {
+  return {
+    stop
+  } as unknown as MediaStreamTrack
+}
+
+function createMockStream(tracks: MediaStreamTrack[]) {
+  return {
+    getAudioTracks: vi.fn(() => tracks),
+    getTracks: vi.fn(() => tracks)
+  } as unknown as MediaStream
+}
+
+function createMockDataChannel(close: ReturnType<typeof vi.fn>) {
+  return {
+    close,
+    onmessage: null,
+    onopen: null
+  } as unknown as RTCDataChannel
+}
+
+class MockPeerConnection {
+  onconnectionstatechange: (() => void) | null = null
+  ontrack: ((event: RTCTrackEvent) => void) | null = null
+  connectionState: RTCPeerConnectionState = 'new'
+  addTrack = vi.fn()
+  close = vi.fn()
+  createOffer = vi.fn(async () => ({ sdp: 'offer-sdp', type: 'offer' }))
+  setLocalDescription = vi.fn(async () => undefined)
+  setRemoteDescription = vi.fn(async () => undefined)
+
+  constructor(
+    private readonly dataChannel: RTCDataChannel,
+    private readonly receiverTracks: MediaStreamTrack[]
+  ) {}
+
+  createDataChannel = vi.fn(() => this.dataChannel)
+  getSenders = vi.fn(() => [] as RTCRtpSender[])
+  getReceivers = vi.fn(() =>
+    this.receiverTracks.map((track) => ({ track }) as RTCRtpReceiver)
+  )
+}
+
+function createMockPeerConnectionConstructor(
+  peerConnections: MockPeerConnection[],
+  dataChannel: RTCDataChannel,
+  receiverTracks: MediaStreamTrack[]
+) {
+  return class extends MockPeerConnection {
+    constructor() {
+      super(dataChannel, receiverTracks)
+      peerConnections.push(this)
+    }
+  } as unknown as typeof RTCPeerConnection
+}

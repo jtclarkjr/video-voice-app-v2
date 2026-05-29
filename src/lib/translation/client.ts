@@ -23,6 +23,7 @@ export type LiveTranslationSession = {
 export type StartLiveTranslationSessionOptions = {
   targetLanguage: TranslationLanguageCode
   onTranscriptDelta: (delta: string) => void
+  onTranslatedAudioStream?: (stream: MediaStream) => void
   onStatus?: (status: TranslationConnectionStatus) => void
   onError?: (message: string) => void
 }
@@ -75,10 +76,12 @@ export async function fetchTranslationClientSecret(
 export async function startLiveTranslationSession({
   targetLanguage,
   onTranscriptDelta,
+  onTranslatedAudioStream,
   onStatus,
   onError
 }: StartLiveTranslationSessionOptions): Promise<LiveTranslationSession> {
   let stream: MediaStream | null = null
+  let translatedAudioStream: MediaStream | null = null
   let peerConnection: RTCPeerConnection | null = null
   let events: RTCDataChannel | null = null
   let stopped = false
@@ -96,6 +99,11 @@ export async function startLiveTranslationSession({
     peerConnection?.getReceivers().forEach((receiver) => receiver.track?.stop())
     peerConnection?.close()
     peerConnection = null
+
+    for (const track of translatedAudioStream?.getTracks() ?? []) {
+      track.stop()
+    }
+    translatedAudioStream = null
 
     for (const track of stream?.getTracks() ?? []) {
       track.stop()
@@ -121,8 +129,21 @@ export async function startLiveTranslationSession({
       peerConnection.addTrack(track, stream)
     }
 
-    peerConnection.ontrack = ({ track }) => {
-      track.enabled = false
+    peerConnection.ontrack = ({ streams, track }) => {
+      if (stopped) {
+        track.stop()
+        return
+      }
+
+      const [remoteStream] = streams
+      if (remoteStream) {
+        translatedAudioStream = remoteStream
+      } else {
+        translatedAudioStream ??= new MediaStream()
+        translatedAudioStream.addTrack(track)
+      }
+
+      onTranslatedAudioStream?.(translatedAudioStream)
     }
 
     peerConnection.onconnectionstatechange = () => {

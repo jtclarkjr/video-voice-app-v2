@@ -7,7 +7,9 @@
     Mic,
     Play,
     Square,
-    Trash2
+    Trash2,
+    Volume2,
+    VolumeX
   } from 'lucide-svelte'
   import AuthDialog from '$lib/components/auth/AuthDialog.svelte'
   import type { AuthConfig } from '$lib/server/auth-config'
@@ -33,17 +35,23 @@
   let authDialogOpen = $state(false)
   let status = $state<TranslationConnectionStatus>('idle')
   let translationSession = $state<LiveTranslationSession | null>(null)
+  let translatedAudioElement = $state<HTMLAudioElement | null>(null)
+  let translatedAudioStream = $state<MediaStream | null>(null)
+  let translatedVoiceMuted = $state(false)
+  let voicePlaybackBlocked = $state(false)
 
   const starting = $derived(
     status === 'requesting-microphone' || status === 'connecting'
   )
   const active = $derived(translationSession !== null && status === 'listening')
+  const voiceControlsVisible = $derived(active || starting)
   const selectedLanguageLabel = $derived(
     getTranslationLanguageLabel(targetLanguage)
   )
 
   onDestroy(() => {
     translationSession?.stop()
+    resetTranslatedAudio()
   })
 
   async function startSession() {
@@ -58,6 +66,7 @@
 
     translationSession?.stop()
     translationSession = null
+    resetTranslatedAudio()
     transcript = ''
     copied = false
     error = null
@@ -68,10 +77,14 @@
         onTranscriptDelta(delta) {
           transcript += delta
         },
+        onTranslatedAudioStream(stream) {
+          void attachTranslatedAudioStream(stream)
+        },
         onStatus(nextStatus) {
           status = nextStatus
           if (nextStatus === 'stopped') {
             translationSession = null
+            resetTranslatedAudio()
           }
         },
         onError(message) {
@@ -81,6 +94,7 @@
     } catch (cause) {
       translationSession = null
       status = 'idle'
+      resetTranslatedAudio()
       error =
         cause instanceof Error
           ? cause.message
@@ -92,6 +106,7 @@
     translationSession?.stop()
     translationSession = null
     status = 'stopped'
+    resetTranslatedAudio()
   }
 
   function clearTranscript() {
@@ -109,6 +124,76 @@
     window.setTimeout(() => {
       copied = false
     }, 1500)
+  }
+
+  async function attachTranslatedAudioStream(stream: MediaStream) {
+    translatedAudioStream = stream
+
+    if (!translatedAudioElement) {
+      return
+    }
+
+    translatedAudioElement.srcObject = stream
+    translatedAudioElement.muted = translatedVoiceMuted
+    await playTranslatedAudio()
+  }
+
+  async function playTranslatedAudio() {
+    if (
+      !translatedAudioElement ||
+      !translatedAudioStream ||
+      translatedVoiceMuted
+    ) {
+      return
+    }
+
+    try {
+      await translatedAudioElement.play()
+      voicePlaybackBlocked = false
+    } catch {
+      voicePlaybackBlocked = true
+    }
+  }
+
+  function toggleTranslatedVoice() {
+    translatedVoiceMuted = !translatedVoiceMuted
+    voicePlaybackBlocked = false
+
+    if (!translatedAudioElement) {
+      return
+    }
+
+    translatedAudioElement.muted = translatedVoiceMuted
+    if (translatedVoiceMuted) {
+      translatedAudioElement.pause()
+      return
+    }
+
+    void playTranslatedAudio()
+  }
+
+  function enableTranslatedVoice() {
+    translatedVoiceMuted = false
+    if (translatedAudioElement) {
+      translatedAudioElement.muted = false
+    }
+    void playTranslatedAudio()
+  }
+
+  function resetTranslatedAudio() {
+    translatedAudioStream = null
+    voicePlaybackBlocked = false
+
+    if (!translatedAudioElement) {
+      return
+    }
+
+    translatedAudioElement.pause()
+    translatedAudioElement.srcObject = null
+  }
+
+  function translatedVoiceLabel() {
+    return translatedVoiceMuted ? 'Unmute translated voice' : 'Mute translated voice'
   }
 
   function statusLabel() {
@@ -174,6 +259,15 @@
       </div>
     </div>
   {:else}
+    <audio
+      bind:this={translatedAudioElement}
+      class="hidden"
+      autoplay
+      playsinline
+      aria-hidden="true"
+      oncanplay={() => void playTranslatedAudio()}
+    ></audio>
+
     <div class="grid gap-3 sm:gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
       <div
         class={`surface-card self-start p-3 sm:p-5 lg:sticky lg:top-24 ${
@@ -239,6 +333,34 @@
               >
                 <Play class="size-4" aria-hidden="true" />
                 {starting ? 'Starting' : 'Start'}
+              </button>
+            {/if}
+
+            {#if voiceControlsVisible}
+              <button
+                type="button"
+                class="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+                onclick={toggleTranslatedVoice}
+                aria-pressed={!translatedVoiceMuted}
+              >
+                {#if translatedVoiceMuted}
+                  <VolumeX class="size-4" aria-hidden="true" />
+                  Voice Off
+                {:else}
+                  <Volume2 class="size-4" aria-hidden="true" />
+                  Voice On
+                {/if}
+              </button>
+            {/if}
+
+            {#if voicePlaybackBlocked}
+              <button
+                type="button"
+                class="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-primary/40 bg-primary/10 px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/15"
+                onclick={() => void enableTranslatedVoice()}
+              >
+                <Volume2 class="size-4" aria-hidden="true" />
+                Enable Voice
               </button>
             {/if}
 
@@ -338,6 +460,32 @@
           </p>
           <p class="m-0 text-xs text-muted-foreground">{statusLabel()}</p>
         </div>
+        {#if voiceControlsVisible}
+          <button
+            type="button"
+            class="inline-flex size-11 items-center justify-center rounded-md border border-border bg-background text-muted-foreground"
+            onclick={toggleTranslatedVoice}
+            aria-label={translatedVoiceLabel()}
+            title={translatedVoiceMuted ? 'Voice off' : 'Voice on'}
+            aria-pressed={!translatedVoiceMuted}
+          >
+            {#if translatedVoiceMuted}
+              <VolumeX class="size-4" aria-hidden="true" />
+            {:else}
+              <Volume2 class="size-4" aria-hidden="true" />
+            {/if}
+          </button>
+        {/if}
+        {#if voicePlaybackBlocked}
+          <button
+            type="button"
+            class="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-primary/40 bg-primary/10 px-3 py-2 text-sm font-medium text-primary"
+            onclick={() => void enableTranslatedVoice()}
+          >
+            <Volume2 class="size-4" aria-hidden="true" />
+            Enable
+          </button>
+        {/if}
         {#if active}
           <button
             type="button"
