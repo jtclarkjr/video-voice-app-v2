@@ -14,9 +14,11 @@ export type TranslationConnectionStatus =
   | 'requesting-microphone'
   | 'connecting'
   | 'listening'
+  | 'renewing'
   | 'stopped'
 
 export type LiveTranslationSession = {
+  renew: () => Promise<void>
   stop: () => void
 }
 
@@ -33,6 +35,12 @@ type TranslationClientSecretResponse = {
   client_secret?: {
     value?: unknown
   }
+}
+
+type TranslationConnection = {
+  events: RTCDataChannel | null
+  peerConnection: RTCPeerConnection
+  translatedAudioStream: MediaStream | null
 }
 
 export async function createTranslationClientSecret(
@@ -81,9 +89,8 @@ export async function startLiveTranslationSession({
   onError
 }: StartLiveTranslationSessionOptions): Promise<LiveTranslationSession> {
   let stream: MediaStream | null = null
-  let translatedAudioStream: MediaStream | null = null
-  let peerConnection: RTCPeerConnection | null = null
-  let events: RTCDataChannel | null = null
+  let connection: TranslationConnection | null = null
+  let renewPromise: Promise<void> | null = null
   let stopped = false
 
   const stop = () => {
@@ -92,18 +99,8 @@ export async function startLiveTranslationSession({
     }
 
     stopped = true
-    events?.close()
-    events = null
-
-    peerConnection?.getSenders().forEach((sender) => sender.track?.stop())
-    peerConnection?.getReceivers().forEach((receiver) => receiver.track?.stop())
-    peerConnection?.close()
-    peerConnection = null
-
-    for (const track of translatedAudioStream?.getTracks() ?? []) {
-      track.stop()
-    }
-    translatedAudioStream = null
+    closeConnection(connection)
+    connection = null
 
     for (const track of stream?.getTracks() ?? []) {
       track.stop()
@@ -112,21 +109,29 @@ export async function startLiveTranslationSession({
     onStatus?.('stopped')
   }
 
-  try {
-    onStatus?.('requesting-microphone')
-    stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-
-    if (stopped) {
-      stop()
-      return { stop }
+  const createConnection = async (
+    connectingStatus: TranslationConnectionStatus
+  ) => {
+    const currentStream = stream
+    if (!currentStream) {
+      throw new Error('Microphone is not available.')
     }
 
-    onStatus?.('connecting')
+    onStatus?.(connectingStatus)
     const clientSecret = await createTranslationClientSecret(targetLanguage)
-    peerConnection = new RTCPeerConnection()
+    if (stopped || stream !== currentStream) {
+      throw new Error('Translation session stopped.')
+    }
 
-    for (const track of stream.getAudioTracks()) {
-      peerConnection.addTrack(track, stream)
+    const peerConnection = new RTCPeerConnection()
+    const nextConnection: TranslationConnection = {
+      events: null,
+      peerConnection,
+      translatedAudioStream: null
+    }
+
+    for (const track of currentStream.getAudioTracks()) {
+      peerConnection.addTrack(track, currentStream)
     }
 
     peerConnection.ontrack = ({ streams, track }) => {
@@ -137,17 +142,17 @@ export async function startLiveTranslationSession({
 
       const [remoteStream] = streams
       if (remoteStream) {
-        translatedAudioStream = remoteStream
+        nextConnection.translatedAudioStream = remoteStream
       } else {
-        translatedAudioStream ??= new MediaStream()
-        translatedAudioStream.addTrack(track)
+        nextConnection.translatedAudioStream ??= new MediaStream()
+        nextConnection.translatedAudioStream.addTrack(track)
       }
 
-      onTranslatedAudioStream?.(translatedAudioStream)
+      onTranslatedAudioStream?.(nextConnection.translatedAudioStream)
     }
 
     peerConnection.onconnectionstatechange = () => {
-      if (!peerConnection || stopped) {
+      if (stopped || connection !== nextConnection) {
         return
       }
 
@@ -158,8 +163,13 @@ export async function startLiveTranslationSession({
       }
     }
 
-    events = peerConnection.createDataChannel('oai-events')
-    events.onopen = () => onStatus?.('listening')
+    const events = peerConnection.createDataChannel('oai-events')
+    nextConnection.events = events
+    events.onopen = () => {
+      if (!stopped && connection === nextConnection) {
+        onStatus?.('listening')
+      }
+    }
     events.onmessage = ({ data }) => {
       const event = parseRealtimeEvent(data)
       const delta = getTranslationDelta(event)
@@ -171,36 +181,110 @@ export async function startLiveTranslationSession({
       }
     }
 
-    const offer = await peerConnection.createOffer()
-    await peerConnection.setLocalDescription(offer)
+    try {
+      const offer = await peerConnection.createOffer()
+      await peerConnection.setLocalDescription(offer)
 
-    const answerResponse = await fetch(OPENAI_TRANSLATION_CALLS_URL, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${clientSecret}`,
-        'Content-Type': 'application/sdp'
-      },
-      body: offer.sdp ?? ''
-    })
+      const answerResponse = await fetch(OPENAI_TRANSLATION_CALLS_URL, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${clientSecret}`,
+          'Content-Type': 'application/sdp'
+        },
+        body: offer.sdp ?? ''
+      })
 
-    if (!answerResponse.ok) {
-      throw new Error('Could not connect to the translation session.')
+      if (!answerResponse.ok) {
+        throw new Error('Could not connect to the translation session.')
+      }
+
+      await peerConnection.setRemoteDescription({
+        type: 'answer',
+        sdp: await answerResponse.text()
+      })
+
+      return nextConnection
+    } catch (error) {
+      closeConnection(nextConnection)
+      throw error
+    }
+  }
+
+  const renew = async () => {
+    if (stopped) {
+      return
     }
 
-    await peerConnection.setRemoteDescription({
-      type: 'answer',
-      sdp: await answerResponse.text()
+    if (renewPromise) {
+      return renewPromise
+    }
+
+    renewPromise = (async () => {
+      const previousConnection = connection
+      let nextConnection: TranslationConnection
+      try {
+        nextConnection = await createConnection('renewing')
+      } catch (error) {
+        if (!stopped && previousConnection === connection) {
+          onStatus?.('listening')
+        }
+        throw error
+      }
+
+      if (stopped) {
+        closeConnection(nextConnection)
+        return
+      }
+
+      connection = nextConnection
+      closeConnection(previousConnection)
+      onStatus?.('listening')
+    })().finally(() => {
+      renewPromise = null
     })
+
+    return renewPromise
+  }
+
+  try {
+    onStatus?.('requesting-microphone')
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+
+    if (stopped) {
+      stop()
+      return { renew, stop }
+    }
+
+    connection = await createConnection('connecting')
 
     if (!stopped) {
       onStatus?.('listening')
     }
 
-    return { stop }
+    return { renew, stop }
   } catch (error) {
     stop()
     throw error
   }
+}
+
+function closeConnection(connection: TranslationConnection | null) {
+  if (!connection) {
+    return
+  }
+
+  connection.events?.close()
+  connection.events = null
+
+  connection.peerConnection
+    .getReceivers()
+    .forEach((receiver) => receiver.track?.stop())
+  connection.peerConnection.close()
+
+  for (const track of connection.translatedAudioStream?.getTracks() ?? []) {
+    track.stop()
+  }
+  connection.translatedAudioStream = null
 }
 
 function extractTranslationClientSecret(

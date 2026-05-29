@@ -109,8 +109,8 @@ describe('translation client secret requests', () => {
     })
     vi.stubGlobal(
       'RTCPeerConnection',
-      createMockPeerConnectionConstructor(peerConnections, dataChannel, [
-        remoteTrack
+      createMockPeerConnectionConstructor(peerConnections, [dataChannel], [
+        [remoteTrack]
       ])
     )
     vi.stubGlobal(
@@ -151,6 +151,157 @@ describe('translation client secret requests', () => {
     expect(peerConnections[0].close).toHaveBeenCalled()
     expect(localTrackStop).toHaveBeenCalled()
     expect(remoteTrackStop).toHaveBeenCalled()
+  })
+
+  it('renews with the existing microphone stream and replaces the connection', async () => {
+    const localTrackStop = vi.fn()
+    const firstRemoteTrackStop = vi.fn()
+    const secondRemoteTrackStop = vi.fn()
+    const firstDataChannelClose = vi.fn()
+    const secondDataChannelClose = vi.fn()
+    const localTrack = createMockTrack(localTrackStop)
+    const firstRemoteTrack = createMockTrack(firstRemoteTrackStop)
+    const secondRemoteTrack = createMockTrack(secondRemoteTrackStop)
+    const localStream = createMockStream([localTrack])
+    const firstRemoteStream = createMockStream([firstRemoteTrack])
+    const secondRemoteStream = createMockStream([secondRemoteTrack])
+    const firstDataChannel = createMockDataChannel(firstDataChannelClose)
+    const secondDataChannel = createMockDataChannel(secondDataChannelClose)
+    const peerConnections: MockPeerConnection[] = []
+    const getUserMedia = vi.fn(async () => localStream)
+
+    vi.mocked(getAccessToken).mockResolvedValue('access-token')
+    vi.stubGlobal('window', {
+      location: {
+        hostname: 'localhost',
+        protocol: 'http:'
+      }
+    })
+    vi.stubGlobal('navigator', {
+      mediaDevices: {
+        getUserMedia
+      }
+    })
+    vi.stubGlobal(
+      'RTCPeerConnection',
+      createMockPeerConnectionConstructor(
+        peerConnections,
+        [firstDataChannel, secondDataChannel],
+        [[firstRemoteTrack], [secondRemoteTrack]]
+      )
+    )
+    vi.stubGlobal('fetch', createTranslationFetchMock())
+
+    const onTranslatedAudioStream = vi.fn()
+    const onStatus = vi.fn()
+    const session = await startLiveTranslationSession({
+      targetLanguage: 'es',
+      onTranscriptDelta: vi.fn(),
+      onTranslatedAudioStream,
+      onStatus
+    })
+
+    peerConnections[0].ontrack?.({
+      streams: [firstRemoteStream],
+      track: firstRemoteTrack
+    } as unknown as RTCTrackEvent)
+
+    await session.renew()
+
+    peerConnections[1].ontrack?.({
+      streams: [secondRemoteStream],
+      track: secondRemoteTrack
+    } as unknown as RTCTrackEvent)
+
+    expect(getUserMedia).toHaveBeenCalledTimes(1)
+    expect(peerConnections).toHaveLength(2)
+    expect(peerConnections[0].addTrack).toHaveBeenCalledWith(
+      localTrack,
+      localStream
+    )
+    expect(peerConnections[1].addTrack).toHaveBeenCalledWith(
+      localTrack,
+      localStream
+    )
+    expect(firstDataChannelClose).toHaveBeenCalled()
+    expect(peerConnections[0].close).toHaveBeenCalled()
+    expect(firstRemoteTrackStop).toHaveBeenCalled()
+    expect(localTrackStop).not.toHaveBeenCalled()
+    expect(onTranslatedAudioStream).toHaveBeenLastCalledWith(secondRemoteStream)
+    expect(onStatus).toHaveBeenCalledWith('renewing')
+    expect(onStatus).toHaveBeenLastCalledWith('listening')
+
+    session.stop()
+
+    expect(secondDataChannelClose).toHaveBeenCalled()
+    expect(peerConnections[1].close).toHaveBeenCalled()
+    expect(secondRemoteTrackStop).toHaveBeenCalled()
+    expect(localTrackStop).toHaveBeenCalled()
+  })
+
+  it('keeps the current connection alive when renewal fails', async () => {
+    const localTrackStop = vi.fn()
+    const firstRemoteTrackStop = vi.fn()
+    const secondRemoteTrackStop = vi.fn()
+    const firstDataChannelClose = vi.fn()
+    const secondDataChannelClose = vi.fn()
+    const localTrack = createMockTrack(localTrackStop)
+    const firstRemoteTrack = createMockTrack(firstRemoteTrackStop)
+    const secondRemoteTrack = createMockTrack(secondRemoteTrackStop)
+    const localStream = createMockStream([localTrack])
+    const firstDataChannel = createMockDataChannel(firstDataChannelClose)
+    const secondDataChannel = createMockDataChannel(secondDataChannelClose)
+    const peerConnections: MockPeerConnection[] = []
+
+    vi.mocked(getAccessToken).mockResolvedValue('access-token')
+    vi.stubGlobal('window', {
+      location: {
+        hostname: 'localhost',
+        protocol: 'http:'
+      }
+    })
+    vi.stubGlobal('navigator', {
+      mediaDevices: {
+        getUserMedia: vi.fn(async () => localStream)
+      }
+    })
+    vi.stubGlobal(
+      'RTCPeerConnection',
+      createMockPeerConnectionConstructor(
+        peerConnections,
+        [firstDataChannel, secondDataChannel],
+        [[firstRemoteTrack], [secondRemoteTrack]]
+      )
+    )
+    vi.stubGlobal(
+      'fetch',
+      createTranslationFetchMock({
+        failAnswerAfter: 1
+      })
+    )
+
+    const onStatus = vi.fn()
+    const session = await startLiveTranslationSession({
+      targetLanguage: 'es',
+      onTranscriptDelta: vi.fn(),
+      onStatus
+    })
+
+    await expect(session.renew()).rejects.toThrow(
+      'Could not connect to the translation session.'
+    )
+
+    expect(peerConnections).toHaveLength(2)
+    expect(secondDataChannelClose).toHaveBeenCalled()
+    expect(peerConnections[1].close).toHaveBeenCalled()
+    expect(secondRemoteTrackStop).toHaveBeenCalled()
+    expect(firstDataChannelClose).not.toHaveBeenCalled()
+    expect(peerConnections[0].close).not.toHaveBeenCalled()
+    expect(firstRemoteTrackStop).not.toHaveBeenCalled()
+    expect(localTrackStop).not.toHaveBeenCalled()
+    expect(onStatus).toHaveBeenLastCalledWith('listening')
+
+    session.stop()
   })
 })
 
@@ -207,14 +358,41 @@ class MockPeerConnection {
   )
 }
 
+function createTranslationFetchMock({
+  failAnswerAfter
+}: { failAnswerAfter?: number } = {}) {
+  let answerRequests = 0
+
+  return vi.fn(async (input: RequestInfo | URL) => {
+    const url = getFetchURL(input)
+    if (url.endsWith('/translation/client-secret')) {
+      return new Response(JSON.stringify({ value: 'client-secret' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      })
+    }
+
+    answerRequests += 1
+    if (failAnswerAfter && answerRequests > failAnswerAfter) {
+      return new Response('nope', { status: 500 })
+    }
+
+    return new Response('answer-sdp', {
+      status: 200,
+      headers: { 'Content-Type': 'application/sdp' }
+    })
+  })
+}
+
 function createMockPeerConnectionConstructor(
   peerConnections: MockPeerConnection[],
-  dataChannel: RTCDataChannel,
-  receiverTracks: MediaStreamTrack[]
+  dataChannels: RTCDataChannel[],
+  receiverTrackGroups: MediaStreamTrack[][]
 ) {
   return class extends MockPeerConnection {
     constructor() {
-      super(dataChannel, receiverTracks)
+      const index = peerConnections.length
+      super(dataChannels[index], receiverTrackGroups[index] ?? [])
       peerConnections.push(this)
     }
   } as unknown as typeof RTCPeerConnection

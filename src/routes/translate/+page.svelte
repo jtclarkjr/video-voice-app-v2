@@ -25,6 +25,12 @@
     type LiveTranslationSession,
     type TranslationConnectionStatus
   } from '$lib/translation/client'
+  import {
+    formatTranslationSessionTime,
+    getTranslationSessionTiming,
+    translationSessionMaxRenewAttempts,
+    translationSessionRenewRetryMs
+  } from '$lib/translation/session-timing'
 
   let { data } = $props<{ data: { authConfig: AuthConfig } }>()
 
@@ -39,14 +45,33 @@
   let translatedAudioStream = $state<MediaStream | null>(null)
   let translatedVoiceMuted = $state(false)
   let voicePlaybackBlocked = $state(false)
+  let sessionStartedAt = $state<number | null>(null)
+  let sessionTimingNow = $state(Date.now())
+  let sessionTimer = $state<ReturnType<typeof window.setInterval> | null>(null)
+  let renewalRetryTimer = $state<ReturnType<typeof window.setTimeout> | null>(
+    null
+  )
+  let renewalAttempts = $state(0)
+  let renewalInProgress = $state(false)
 
   const starting = $derived(status === 'requesting-microphone' || status === 'connecting')
+  const renewing = $derived(status === 'renewing')
   const active = $derived(translationSession !== null && status === 'listening')
-  const voiceControlsVisible = $derived(active || starting)
+  const running = $derived(active || renewing)
+  const voiceControlsVisible = $derived(running || starting)
+  const sessionTiming = $derived(
+    sessionStartedAt === null
+      ? null
+      : getTranslationSessionTiming(sessionStartedAt, sessionTimingNow)
+  )
+  const sessionWarningVisible = $derived(
+    running && sessionTiming?.shouldWarn === true
+  )
   const selectedLanguageLabel = $derived(getTranslationLanguageLabel(targetLanguage))
 
   onDestroy(() => {
     translationSession?.stop()
+    clearSessionTimers()
     resetTranslatedAudio()
   })
 
@@ -62,6 +87,7 @@
 
     translationSession?.stop()
     translationSession = null
+    clearSessionTimers()
     resetTranslatedAudio()
     transcript = ''
     copied = false
@@ -80,6 +106,7 @@
           status = nextStatus
           if (nextStatus === 'stopped') {
             translationSession = null
+            clearSessionTimers()
             resetTranslatedAudio()
           }
         },
@@ -87,9 +114,11 @@
           error = message
         }
       })
+      startSessionTimers()
     } catch (cause) {
       translationSession = null
       status = 'idle'
+      clearSessionTimers()
       resetTranslatedAudio()
       error = cause instanceof Error ? cause.message : 'Could not start live translation.'
     }
@@ -99,6 +128,7 @@
     translationSession?.stop()
     translationSession = null
     status = 'stopped'
+    clearSessionTimers()
     resetTranslatedAudio()
   }
 
@@ -117,6 +147,98 @@
     window.setTimeout(() => {
       copied = false
     }, 1500)
+  }
+
+  function startSessionTimers() {
+    clearSessionTimers()
+    sessionStartedAt = Date.now()
+    sessionTimingNow = Date.now()
+    sessionTimer = window.setInterval(handleSessionTimerTick, 1000)
+  }
+
+  function clearSessionTimers() {
+    if (sessionTimer) {
+      window.clearInterval(sessionTimer)
+      sessionTimer = null
+    }
+    if (renewalRetryTimer) {
+      window.clearTimeout(renewalRetryTimer)
+      renewalRetryTimer = null
+    }
+    sessionStartedAt = null
+    sessionTimingNow = Date.now()
+    renewalAttempts = 0
+    renewalInProgress = false
+  }
+
+  function handleSessionTimerTick() {
+    if (!translationSession || sessionStartedAt === null) {
+      return
+    }
+
+    const now = Date.now()
+    const timing = getTranslationSessionTiming(sessionStartedAt, now)
+    sessionTimingNow = now
+
+    if (timing.hardCutoffReached) {
+      error = 'Session reached its time limit. Start again to continue.'
+      stopSession()
+      return
+    }
+
+    if (
+      timing.shouldRenew &&
+      !renewalRetryTimer &&
+      renewalAttempts < translationSessionMaxRenewAttempts
+    ) {
+      void renewTranslationSession()
+    }
+  }
+
+  async function renewTranslationSession() {
+    if (
+      !translationSession ||
+      renewalInProgress ||
+      renewalAttempts >= translationSessionMaxRenewAttempts
+    ) {
+      return
+    }
+
+    renewalInProgress = true
+    renewalAttempts += 1
+
+    try {
+      await translationSession.renew()
+      sessionStartedAt = Date.now()
+      sessionTimingNow = Date.now()
+      renewalAttempts = 0
+      error = null
+    } catch {
+      if (!translationSession) {
+        return
+      }
+
+      if (renewalAttempts < translationSessionMaxRenewAttempts) {
+        error = 'Could not renew translation session. Retrying...'
+        scheduleRenewalRetry()
+      } else {
+        error =
+          'Could not renew translation session. Translation will stop before the session limit.'
+      }
+    } finally {
+      renewalInProgress = false
+    }
+  }
+
+  function scheduleRenewalRetry() {
+    if (renewalRetryTimer) {
+      window.clearTimeout(renewalRetryTimer)
+    }
+
+    renewalRetryTimer = window.setTimeout(() => {
+      renewalRetryTimer = null
+      void renewTranslationSession()
+    }, translationSessionRenewRetryMs)
   }
 
   async function attachTranslatedAudioStream(stream: MediaStream) {
@@ -185,6 +307,30 @@
     return translatedVoiceMuted ? 'Unmute translated voice' : 'Mute translated voice'
   }
 
+  function sessionLimitLabel() {
+    if (!sessionTiming) {
+      return ''
+    }
+
+    if (renewing) {
+      return 'Renewing translation session...'
+    }
+
+    if (renewalAttempts > 0) {
+      return `Session time limit in ${formatTranslationSessionTime(
+        sessionTiming.timeUntilHardCutoffMs
+      )}`
+    }
+
+    if (sessionTiming.shouldRenew) {
+      return 'Renewing translation session...'
+    }
+
+    return `Auto-renew in ${formatTranslationSessionTime(
+      sessionTiming.timeUntilRenewMs
+    )}`
+  }
+
   function statusLabel() {
     if (status === 'requesting-microphone') {
       return 'Microphone'
@@ -194,6 +340,9 @@
     }
     if (status === 'listening') {
       return 'Listening'
+    }
+    if (status === 'renewing') {
+      return 'Renewing'
     }
     if (status === 'stopped') {
       return 'Stopped'
@@ -259,10 +408,20 @@
       oncanplay={() => void playTranslatedAudio()}
     ></audio>
 
+    {#if sessionWarningVisible}
+      <div
+        class="flex items-center justify-between gap-3 rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-primary sm:px-4"
+        role="status"
+      >
+        <span class="min-w-0">{sessionLimitLabel()}</span>
+        <span class="shrink-0 font-medium">{statusLabel()}</span>
+      </div>
+    {/if}
+
     <div class="grid gap-3 sm:gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
       <div
         class={`surface-card self-start p-3 sm:p-5 lg:sticky lg:top-24 ${
-          active || starting ? 'hidden sm:block' : ''
+          running || starting ? 'hidden sm:block' : ''
         }`}
       >
         <div class="grid gap-3 sm:gap-5">
@@ -286,7 +445,7 @@
               <select
                 id="translation-language"
                 bind:value={targetLanguage}
-                disabled={active || starting}
+                disabled={running || starting}
                 class="min-h-10 w-full rounded-md border border-border bg-background px-3 py-2 outline-none transition focus:border-primary disabled:opacity-60 sm:min-h-11"
               >
                 {#each translationLanguages as language}
@@ -310,7 +469,7 @@
           </div>
 
           <div class="hidden grid-cols-2 gap-2 sm:grid">
-            {#if active}
+            {#if running}
               <button
                 type="button"
                 class="hidden min-h-11 items-center justify-center gap-2 rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 lg:col-span-2 lg:inline-flex"
@@ -443,7 +602,7 @@
               class="flex min-h-[16rem] items-center justify-center text-center sm:min-h-[20rem]"
             >
               <p class="m-0 text-base text-muted-foreground">
-                {active || starting ? 'Listening...' : 'Ready'}
+                {running || starting ? 'Listening...' : 'Ready'}
               </p>
             </div>
           {/if}
@@ -487,7 +646,7 @@
             Enable
           </button>
         {/if}
-        {#if active}
+        {#if running}
           <button
             type="button"
             class="inline-flex min-h-11 min-w-28 items-center justify-center gap-2 rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground"
