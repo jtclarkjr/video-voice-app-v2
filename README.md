@@ -1,10 +1,12 @@
 # Video Voice App V2
 
-A WebRTC video calling app built with SvelteKit 2, Svelte 5, and Vite+. Users can create or join
-rooms from a lobby and participate in multi-party video calls with screen sharing, chat, and
-adaptive layouts.
+A WebRTC voice and video app built with SvelteKit 2, Svelte 5, and Vite+. Users can create or join
+rooms for multi-party video calls with screen sharing, chat, and adaptive layouts. Signed-in users
+can also use a private live translation tool with streamed translated text and live translated
+voice playback.
 
-Backend is handled by a separate signaling and room service.
+Backend is handled by a separate signaling, room, auth-protected translation, and OpenAI session
+service.
 
 ## Stack
 
@@ -13,9 +15,12 @@ Backend is handled by a separate signaling and room service.
 - [Vite+](https://viteplus.dev/) toolchain
 - [Tailwind CSS v4](https://tailwindcss.com/)
 - Native [WebRTC](https://webrtc.org/) media, data channels, and screen sharing
+- OpenAI Realtime translation via backend-created client secrets
 - [Zod](https://zod.dev/) for validation
 
 ## Features
+
+### Video Conferencing
 
 - Lobby with active room list and live room updates
 - Create-room and join-room flows
@@ -26,6 +31,15 @@ Backend is handled by a separate signaling and room service.
 - Gallery and speaker layouts
 - Reconnection handling and connection quality monitoring
 - Theme support
+
+### Live Translation
+
+- Signed-in-only private live translation sessions outside the video call flow
+- Target language selector with source language auto-detection
+- Streamed translated transcript display
+- Live translated voice playback from the OpenAI Realtime WebRTC audio track
+- Mute/unmute and browser autoplay fallback controls
+- Stop cleanup for microphone, peer connection, data channel, and translated audio
 
 ## Getting Started
 
