@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vite-plus/test'
 import {
   formatTranslationSessionTime,
-  getTranslationSessionTiming,
+  getTranslationSessionTiming
+} from '$lib/translation/timing/session-timing'
+import {
   translationSessionHardCutoffMs,
   translationSessionRenewMs,
   translationSessionWarningMs
-} from '$lib/translation/session-timing'
+} from '$lib/translation/timing/constants'
 
 describe('translation session timing', () => {
   it('does not warn or renew before the warning threshold', () => {

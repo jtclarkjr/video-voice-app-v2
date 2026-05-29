@@ -5,7 +5,7 @@ import {
   isSupportedTranslationLanguage,
   normalizeTranslationLanguage,
   translationLanguages
-} from '$lib/translation/languages'
+} from '$lib/translation/config/languages'
 
 describe('translation languages', () => {
   it('normalizes supported language codes', () => {

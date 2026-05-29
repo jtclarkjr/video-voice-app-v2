@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vite-plus/test'
 import {
   applyTranslationEvent,
   getTranslationDelta
-} from '$lib/translation/transcript'
+} from '$lib/translation/transcript/events'
 
 describe('translation transcript events', () => {
   it('extracts translated transcript deltas', () => {

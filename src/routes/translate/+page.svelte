@@ -17,20 +17,22 @@
   import {
     defaultTranslationLanguage,
     getTranslationLanguageLabel,
-    translationLanguages,
-    type TranslationLanguageCode
-  } from '$lib/translation/languages'
-  import {
-    startLiveTranslationSession,
-    type LiveTranslationSession,
-    type TranslationConnectionStatus
-  } from '$lib/translation/client'
+    translationLanguages
+  } from '$lib/translation/config/languages'
+  import { startLiveTranslationSession } from '$lib/translation/realtime/session'
   import {
     formatTranslationSessionTime,
-    getTranslationSessionTiming,
+    getTranslationSessionTiming
+  } from '$lib/translation/timing/session-timing'
+  import {
     translationSessionMaxRenewAttempts,
     translationSessionRenewRetryMs
-  } from '$lib/translation/session-timing'
+  } from '$lib/translation/timing/constants'
+  import type {
+    LiveTranslationSession,
+    TranslationConnectionStatus,
+    TranslationLanguageCode
+  } from '$lib/translation/types'
 
   let { data } = $props<{ data: { authConfig: AuthConfig } }>()
 

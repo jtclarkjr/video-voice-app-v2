@@ -1,7 +1,4 @@
-export type RealtimeTranslationEvent = {
-  type?: unknown
-  delta?: unknown
-}
+import type { RealtimeTranslationEvent } from '$lib/translation/types'
 
 export function getTranslationDelta(event: unknown): string | null {
   if (!event || typeof event !== 'object') {

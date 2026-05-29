@@ -1,17 +1,9 @@
-export const translationSessionWarningMs = 50 * 60 * 1000
-export const translationSessionRenewMs = 55 * 60 * 1000
-export const translationSessionHardCutoffMs = 59.5 * 60 * 1000
-export const translationSessionRenewRetryMs = 15 * 1000
-export const translationSessionMaxRenewAttempts = 3
-
-export type TranslationSessionTiming = {
-  elapsedMs: number
-  hardCutoffReached: boolean
-  shouldRenew: boolean
-  shouldWarn: boolean
-  timeUntilHardCutoffMs: number
-  timeUntilRenewMs: number
-}
+import type { TranslationSessionTiming } from '$lib/translation/types'
+import {
+  translationSessionHardCutoffMs,
+  translationSessionRenewMs,
+  translationSessionWarningMs
+} from '$lib/translation/timing/constants'
 
 export function getTranslationSessionTiming(
   startedAtMs: number,

@@ -1,3 +1,12 @@
+import type { TranslationLanguageCode } from '$lib/translation/types'
+
+export type { TranslationLanguageCode } from '$lib/translation/types'
+
+type TranslationLanguageOption = {
+  code: TranslationLanguageCode
+  label: string
+}
+
 export const translationLanguages = [
   { code: 'en', label: 'English' },
   { code: 'ja', label: '日本語' },
@@ -10,9 +19,7 @@ export const translationLanguages = [
   { code: 'zh', label: '中文' },
   { code: 'ar', label: 'Arabic' },
   { code: 'hi', label: 'Hindi' }
-] as const
-
-export type TranslationLanguageCode = (typeof translationLanguages)[number]['code']
+] satisfies readonly TranslationLanguageOption[]
 
 export const defaultTranslationLanguage: TranslationLanguageCode = 'en'
 
