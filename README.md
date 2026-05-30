@@ -5,8 +5,8 @@ rooms for multi-party video calls with screen sharing, chat, and adaptive layout
 can also use a private live translation tool with streamed translated text and live translated
 voice playback.
 
-Backend is handled by a separate signaling, room, auth-protected translation, and OpenAI session
-service.
+Backend is handled by a separate signaling, room, auth-protected translation, and OpenAI-managed
+session service.
 
 ## Stack
 
@@ -15,7 +15,7 @@ service.
 - [Vite+](https://viteplus.dev/) toolchain
 - [Tailwind CSS v4](https://tailwindcss.com/)
 - Native [WebRTC](https://webrtc.org/) media, data channels, and screen sharing
-- OpenAI Realtime translation via backend-created client secrets
+- OpenAI Realtime translation via backend-managed SDP session exchange
 - [Zod](https://zod.dev/) for validation
 
 ## Features

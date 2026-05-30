@@ -17,8 +17,10 @@ export const translationLanguages = [
   { code: 'pt', label: 'Portuguese' },
   { code: 'ko', label: '한국어' },
   { code: 'zh', label: '中文' },
-  { code: 'ar', label: 'Arabic' },
-  { code: 'hi', label: 'Hindi' }
+  { code: 'hi', label: 'Hindi' },
+  { code: 'ru', label: 'Russian' },
+  { code: 'id', label: 'Indonesian' },
+  { code: 'vi', label: 'Vietnamese' }
 ] satisfies readonly TranslationLanguageOption[]
 
 export const defaultTranslationLanguage: TranslationLanguageCode = 'en'

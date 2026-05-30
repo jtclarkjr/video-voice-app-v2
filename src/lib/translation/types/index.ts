@@ -8,8 +8,10 @@ export type TranslationLanguageCode =
   | 'ja'
   | 'ko'
   | 'zh'
-  | 'ar'
   | 'hi'
+  | 'ru'
+  | 'id'
+  | 'vi'
 
 export type TranslationConnectionStatus =
   | 'idle'
@@ -32,14 +34,8 @@ export type StartLiveTranslationSessionOptions = {
   onError?: (message: string) => void
 }
 
-export type TranslationClientSecretResponse = {
-  value?: unknown
-  client_secret?: {
-    value?: unknown
-  }
-}
-
 export type TranslationConnection = {
+  cleanupTranslationSession?: (() => void) | null
   events: RTCDataChannel | null
   peerConnection: RTCPeerConnection
   translatedAudioStream: MediaStream | null

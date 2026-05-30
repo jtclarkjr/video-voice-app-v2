@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
 import { getAccessToken } from '$lib/auth/session-service'
-import { translationClientSecretPath } from '$lib/translation/realtime/constants'
+import { translationSessionsPath } from '$lib/translation/realtime/constants'
 import { startLiveTranslationSession } from '$lib/translation/realtime/session'
 
 vi.mock('$lib/auth/session-service', () => ({
@@ -47,11 +47,21 @@ describe('live translation session', () => {
       'fetch',
       vi.fn(async (input: RequestInfo | URL) => {
         const url = getFetchURL(input)
-        if (url.endsWith(translationClientSecretPath)) {
-          return new Response(JSON.stringify({ value: 'client-secret' }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' }
-          })
+        if (url.endsWith(`${translationSessionsPath}?lang=es`)) {
+          return new Response(
+            JSON.stringify({
+              expiresAt: '2026-05-30T12:10:00Z',
+              id: 'session-1'
+            }),
+            {
+              status: 200,
+              headers: { 'Content-Type': 'application/json' }
+            }
+          )
+        }
+
+        if (url.endsWith(`${translationSessionsPath}/session-1`)) {
+          return new Response(null, { status: 204 })
         }
 
         return new Response('answer-sdp', {
@@ -291,15 +301,27 @@ class MockPeerConnection {
 function createTranslationFetchMock({
   failAnswerAfter
 }: { failAnswerAfter?: number } = {}) {
+  let sessionRequests = 0
   let answerRequests = 0
 
   return vi.fn(async (input: RequestInfo | URL) => {
     const url = getFetchURL(input)
-    if (url.endsWith(translationClientSecretPath)) {
-      return new Response(JSON.stringify({ value: 'client-secret' }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      })
+    if (url.includes(`${translationSessionsPath}?lang=`)) {
+      sessionRequests += 1
+      return new Response(
+        JSON.stringify({
+          expiresAt: '2026-05-30T12:10:00Z',
+          id: `session-${sessionRequests}`
+        }),
+        {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    if (url.match(new RegExp(`${translationSessionsPath}/session-\\d+$`))) {
+      return new Response(null, { status: 204 })
     }
 
     answerRequests += 1
