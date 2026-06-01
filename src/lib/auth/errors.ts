@@ -51,6 +51,25 @@ const parseAuthErrorMessage = (value: string): string | null => {
   return null
 }
 
+const getAuthErrorStatusCode = (value: unknown): number | null => {
+  if (!value || typeof value !== 'object') {
+    return null
+  }
+
+  const payload = value as Record<string, unknown>
+  return typeof payload.statusCode === 'number' ? payload.statusCode : null
+}
+
+const isEmailRateLimitMessage = (value: string) => {
+  const normalized = value.toLowerCase()
+  return (
+    normalized.includes('email rate limit') ||
+    normalized.includes('over_email_send_rate_limit') ||
+    normalized.includes('rate limit exceeded') ||
+    (normalized.includes('429') && normalized.includes('too many'))
+  )
+}
+
 export const getAuthErrorMessage = (error: unknown, fallback: string) => {
   let rawMessage: string | null = null
 
@@ -64,5 +83,14 @@ export const getAuthErrorMessage = (error: unknown, fallback: string) => {
     return fallback
   }
 
-  return parseAuthErrorMessage(rawMessage) ?? rawMessage
+  const message = parseAuthErrorMessage(rawMessage) ?? rawMessage
+  if (
+    getAuthErrorStatusCode(error) === 429 ||
+    isEmailRateLimitMessage(rawMessage) ||
+    isEmailRateLimitMessage(message)
+  ) {
+    return 'Email rate limit exceeded. Please wait before trying again.'
+  }
+
+  return message
 }

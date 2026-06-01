@@ -1,5 +1,6 @@
 import {
   type AuthSessionResponse,
+  type AuthSignUpResponse,
   type AuthTokenResponse,
   type OAuthProvider
 } from '@jtclarkjr/supabase-ts-rest'
@@ -52,6 +53,21 @@ const resolveSession = async (
     ...payload,
     user
   }
+}
+
+const getSignUpUser = (value: AuthSignUpResponse): User | null => {
+  if (!value || typeof value !== 'object') {
+    return null
+  }
+
+  const payload = value as Record<string, unknown>
+  const nestedUser = normalizeUser(payload.user)
+  if (nestedUser?.id) {
+    return nestedUser
+  }
+
+  const user = normalizeUser(value)
+  return user?.id ? user : null
 }
 
 const refreshSession = async (session: Session): Promise<Session | null> => {
@@ -275,15 +291,25 @@ export const signUpWithEmail = async (
   }
 
   try {
-    const session = await resolveSession(
-      await supabase.signUp(email, password, {
-        data: { name }
-      })
-    )
+    const response = await supabase.signUp(email, password, {
+      data: { name }
+    })
+    const sessionPayload = normalizeSessionPayload(response)
+    const session = sessionPayload ? await resolveSession(sessionPayload) : null
+
+    if (session) {
+      setLastSessionError(null)
+      setCurrentSession(session)
+      return { data: { session }, error: null }
+    }
+
+    const user = getSignUpUser(response)
+    if (!user) {
+      throw new Error('Invalid sign-up response from Supabase.')
+    }
 
     setLastSessionError(null)
-    setCurrentSession(session)
-    return { data: { session }, error: null }
+    return { data: { session: null, user }, error: null }
   } catch (error) {
     return {
       data: null,
