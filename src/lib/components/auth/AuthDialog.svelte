@@ -19,6 +19,16 @@
   let message = $state<string | null>(null)
   let isSubmitting = $state(false)
 
+  const emailSignUpDisabledMessage = 'Create account via email is currently disabled.'
+
+  const selectSignUpMode = () => {
+    if (!authConfig.emailSignUpEnabled) {
+      return
+    }
+
+    mode = 'sign-up'
+  }
+
   $effect(() => {
     if (!open) {
       mode = 'sign-in'
@@ -28,6 +38,12 @@
       error = null
       message = null
       isSubmitting = false
+    }
+  })
+
+  $effect(() => {
+    if (mode === 'sign-up' && !authConfig.emailSignUpEnabled) {
+      mode = 'sign-in'
     }
   })
 
@@ -57,6 +73,10 @@
         }
 
         open = false
+        return
+      }
+
+      if (!authConfig.emailSignUpEnabled) {
         return
       }
 
@@ -94,6 +114,7 @@
   }
 
   const showEmail = $derived(authConfig.providers.email)
+  const isEmailSignUpDisabled = $derived(showEmail && !authConfig.emailSignUpEnabled)
   const showSso = $derived(
     authConfig.providers.github || authConfig.providers.google || authConfig.providers.apple
   )
@@ -158,13 +179,26 @@
           >
             Sign In
           </button>
-          <button
-            type="button"
-            class={`rounded-full px-4 py-2 text-sm font-semibold transition ${mode === 'sign-up' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}
-            onclick={() => (mode = 'sign-up')}
-          >
-            Create Account
-          </button>
+          <span class="group relative inline-flex">
+            <button
+              type="button"
+              class={`rounded-full px-4 py-2 text-sm font-semibold transition ${mode === 'sign-up' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'} ${isEmailSignUpDisabled ? 'cursor-not-allowed opacity-50' : ''}`}
+              aria-disabled={isEmailSignUpDisabled}
+              aria-describedby={isEmailSignUpDisabled ? 'email-signup-disabled-tooltip' : undefined}
+              onclick={selectSignUpMode}
+            >
+              Create Account
+            </button>
+            {#if isEmailSignUpDisabled}
+              <span
+                id="email-signup-disabled-tooltip"
+                class="pointer-events-none absolute bottom-[calc(100%+0.5rem)] left-1/2 z-50 hidden w-56 -translate-x-1/2 rounded-lg border border-border bg-popover px-3 py-2 text-left text-xs font-medium text-popover-foreground shadow-lg group-hover:block group-focus-within:block"
+                role="tooltip"
+              >
+                {emailSignUpDisabledMessage}
+              </span>
+            {/if}
+          </span>
         </div>
 
         <form class="grid gap-3" onsubmit={handleSubmit}>
