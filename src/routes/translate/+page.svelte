@@ -1,7 +1,9 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte'
+  import { Headphones, MessagesSquare } from 'lucide-svelte'
   import AuthDialog from '$lib/components/auth/AuthDialog.svelte'
   import TranslateAuthGate from '$lib/components/translate/TranslateAuthGate.svelte'
+  import TranslateConversationPanel from '$lib/components/translate/TranslateConversationPanel.svelte'
   import TranslateHeader from '$lib/components/translate/TranslateHeader.svelte'
   import TranslateMobileControls from '$lib/components/translate/TranslateMobileControls.svelte'
   import TranslateSettingsPanel from '$lib/components/translate/TranslateSettingsPanel.svelte'
@@ -19,6 +21,8 @@
     getTranslationLanguageLabel,
     translationLanguages
   } from '$lib/translation/config/languages'
+  import { applyConversationEvent } from '$lib/translation/conversation/events'
+  import { startTranslationConversationSession } from '$lib/translation/conversation/session'
   import { startLiveTranslationSession } from '$lib/translation/realtime/session'
   import {
     formatTranslationSessionTime,
@@ -29,20 +33,41 @@
     translationSessionRenewRetryMs
   } from '$lib/translation/timing/constants'
   import type {
+    ConversationLanguagePair,
+    ConversationRealtimeEvent,
+    ConversationTurn,
+    LiveTranslationConversationSession,
     LiveTranslationSession,
+    TranslationConversationStatus,
     TranslationConnectionStatus,
-    TranslationLanguageCode
+    TranslationLanguageCode,
+    TranslationMode
   } from '$lib/translation/types'
 
   let { data } = $props<{ data: { authConfig: AuthConfig } }>()
 
+  const defaultConversationSourceLanguage: TranslationLanguageCode = 'en'
+  const defaultConversationTargetLanguage: TranslationLanguageCode = 'ja'
+
+  let mode = $state<TranslationMode>('listening')
   let targetLanguage = $state<TranslationLanguageCode>(defaultTranslationLanguage)
+  let conversationSourceLanguage = $state<TranslationLanguageCode>(
+    defaultConversationSourceLanguage
+  )
+  let conversationTargetLanguage = $state<TranslationLanguageCode>(
+    defaultConversationTargetLanguage
+  )
   let transcript = $state('')
+  let conversationTurns = $state<ConversationTurn[]>([])
   let error = $state<string | null>(null)
+  let conversationError = $state<string | null>(null)
   let copied = $state(false)
   let authDialogOpen = $state(false)
   let status = $state<TranslationConnectionStatus>('idle')
+  let conversationStatus = $state<TranslationConversationStatus>('idle')
   let translationSession = $state<LiveTranslationSession | null>(null)
+  let conversationSession = $state<LiveTranslationConversationSession | null>(null)
+  let conversationRunId = $state(0)
   let translatedAudioElement = $state<HTMLAudioElement | null>(null)
   let translatedAudioStream = $state<MediaStream | null>(null)
   let translatedVoiceMuted = $state(false)
@@ -60,23 +85,53 @@
   const renewing = $derived(status === 'renewing')
   const active = $derived(translationSession !== null && status === 'listening')
   const running = $derived(active || renewing)
+  const conversationStarting = $derived(
+    conversationStatus === 'requesting-microphone' || conversationStatus === 'connecting'
+  )
+  const conversationRenewing = $derived(conversationStatus === 'renewing')
+  const conversationActive = $derived(
+    conversationSession !== null && conversationStatus === 'listening'
+  )
+  const conversationRunning = $derived(conversationActive || conversationRenewing)
   const voiceControlsVisible = $derived(running || starting)
+  const conversationLanguages = $derived(getConversationLanguages())
+  const conversationLanguagesValid = $derived(
+    conversationSourceLanguage !== conversationTargetLanguage
+  )
   const sessionTiming = $derived(
     sessionStartedAt === null
       ? null
       : getTranslationSessionTiming(sessionStartedAt, sessionTimingNow)
   )
-  const sessionWarningVisible = $derived(running && sessionTiming?.shouldWarn === true)
+  const sessionWarningVisible = $derived(
+    mode === 'listening' && running && sessionTiming?.shouldWarn === true
+  )
   const selectedLanguageLabel = $derived(getTranslationLanguageLabel(targetLanguage))
+  const selectedConversationLanguageLabel = $derived(
+    `${getTranslationLanguageLabel(conversationSourceLanguage)} / ${getTranslationLanguageLabel(
+      conversationTargetLanguage
+    )}`
+  )
+  const headerLanguageLabel = $derived(
+    mode === 'conversation' ? selectedConversationLanguageLabel : selectedLanguageLabel
+  )
   const currentSessionLimitLabel = $derived(sessionLimitLabel())
   const currentStatusLabel = $derived(statusLabel())
+  const currentConversationStatusLabel = $derived(conversationStatusLabel())
+  const currentHeaderStatusLabel = $derived(
+    mode === 'conversation' ? currentConversationStatusLabel : currentStatusLabel
+  )
   const currentTranslatedVoiceLabel = $derived(translatedVoiceLabel())
   const microphoneUnavailable = $derived(microphoneAvailability === 'unavailable')
   const microphoneWarning = $derived(
-    microphoneUnavailable && !running && !starting ? noMicrophoneConnectedMessage : null
+    microphoneUnavailable && !running && !starting && !conversationRunning && !conversationStarting
+      ? noMicrophoneConnectedMessage
+      : null
   )
   const startDisabled = $derived(microphoneUnavailable)
+  const conversationStartDisabled = $derived(microphoneUnavailable || !conversationLanguagesValid)
   const settingsWarning = $derived(error ? null : microphoneWarning)
+  const conversationWarning = $derived(conversationWarningLabel())
 
   onMount(() => {
     let destroyed = false
@@ -107,9 +162,25 @@
 
   onDestroy(() => {
     translationSession?.stop()
+    conversationSession?.stop()
     clearSessionTimers()
     resetTranslatedAudio()
   })
+
+  function setMode(nextMode: TranslationMode) {
+    if (mode === nextMode) {
+      return
+    }
+
+    if (nextMode === 'conversation' && (running || starting)) {
+      stopSession()
+    }
+    if (nextMode === 'listening' && (conversationRunning || conversationStarting)) {
+      stopConversation()
+    }
+
+    mode = nextMode
+  }
 
   async function startSession() {
     if (session.isPending) {
@@ -172,6 +243,68 @@
     }
   }
 
+  async function startConversation() {
+    if (session.isPending) {
+      return
+    }
+
+    if (session.isAnonymous) {
+      authDialogOpen = true
+      return
+    }
+
+    if (!conversationLanguagesValid) {
+      conversationError = 'Choose two different languages.'
+      return
+    }
+
+    if ((await refreshMicrophoneAvailability()) === 'unavailable') {
+      conversationError = null
+      return
+    }
+
+    conversationSession?.stop()
+    conversationSession = null
+    conversationError = null
+
+    const runId = conversationRunId + 1
+    const languages = conversationLanguages
+    conversationRunId = runId
+
+    try {
+      conversationSession = await startTranslationConversationSession({
+        languages,
+        onTurnEvent(event) {
+          conversationTurns = applyConversationEvent(
+            conversationTurns,
+            scopeConversationEvent(event, runId),
+            languages
+          )
+        },
+        onStatus(nextStatus) {
+          conversationStatus = nextStatus
+          if (nextStatus === 'stopped') {
+            conversationSession = null
+          }
+        },
+        onError(message) {
+          conversationError = message
+        }
+      })
+    } catch (cause) {
+      conversationSession = null
+      conversationStatus = 'idle'
+      const noMicrophoneMessage = getNoMicrophoneMessage(cause)
+      if (noMicrophoneMessage) {
+        microphoneAvailability = 'unavailable'
+        conversationError = null
+        return
+      }
+
+      conversationError = cause instanceof Error ? cause.message : 'Could not start conversation.'
+    }
+  }
+
   async function refreshMicrophoneAvailability() {
     microphoneCheckPending = true
     const nextAvailability = await getMicrophoneAvailability()
@@ -188,9 +321,30 @@
     resetTranslatedAudio()
   }
 
+  function stopConversation() {
+    conversationSession?.stop()
+    conversationSession = null
+    conversationStatus = 'stopped'
+  }
+
   function clearTranscript() {
     transcript = ''
     copied = false
+  }
+
+  function clearConversation() {
+    conversationTurns = []
+  }
+
+  function swapConversationLanguages() {
+    if (conversationRunning || conversationStarting) {
+      return
+    }
+
+    const nextSourceLanguage = conversationTargetLanguage
+    conversationTargetLanguage = conversationSourceLanguage
+    conversationSourceLanguage = nextSourceLanguage
+    conversationError = null
   }
 
   async function copyTranscript() {
@@ -359,6 +513,34 @@
     translatedAudioElement.srcObject = null
   }
 
+  function getConversationLanguages(): ConversationLanguagePair {
+    return [conversationSourceLanguage, conversationTargetLanguage] as ConversationLanguagePair
+  }
+
+  function scopeConversationEvent(
+    event: ConversationRealtimeEvent,
+    runId: number
+  ): ConversationRealtimeEvent {
+    const turnId = `${runId}:${event.turnId}`
+    if (event.type === 'conversation.transcript.delta') {
+      return { ...event, turnId }
+    }
+    if (event.type === 'conversation.translation.delta') {
+      return { ...event, turnId }
+    }
+    return { ...event, turnId }
+  }
+
+  function conversationWarningLabel() {
+    if (conversationError) {
+      return null
+    }
+    if (!conversationLanguagesValid) {
+      return 'Choose two different languages.'
+    }
+    return microphoneWarning
+  }
+
   function translatedVoiceLabel() {
     return translatedVoiceMuted ? 'Unmute translated voice' : 'Mute translated voice'
   }
@@ -412,14 +594,80 @@
     }
     return 'Ready'
   }
+
+  function conversationStatusLabel() {
+    if (!conversationRunning && !conversationStarting) {
+      if (!conversationLanguagesValid) {
+        return 'Choose languages'
+      }
+      if (microphoneUnavailable) {
+        return 'No microphone'
+      }
+      if (microphoneCheckPending) {
+        return 'Checking microphone'
+      }
+    }
+
+    if (conversationStatus === 'requesting-microphone') {
+      return 'Microphone'
+    }
+    if (conversationStatus === 'connecting') {
+      return 'Connecting'
+    }
+    if (conversationStatus === 'listening') {
+      return 'Listening'
+    }
+    if (conversationStatus === 'renewing') {
+      return 'Renewing'
+    }
+    if (conversationStatus === 'stopped') {
+      return 'Stopped'
+    }
+    return 'Ready'
+  }
 </script>
 
 <section class="grid gap-4 pb-24 sm:gap-6 lg:pb-0">
-  <TranslateHeader {selectedLanguageLabel} statusLabel={currentStatusLabel} />
+  <TranslateHeader
+    selectedLanguageLabel={headerLanguageLabel}
+    statusLabel={currentHeaderStatusLabel}
+  />
+
+  <div
+    class="inline-grid grid-cols-2 rounded-lg border border-border/70 bg-card/80 p-1 sm:w-fit"
+    aria-label="Translation mode"
+  >
+    <button
+      type="button"
+      class={`inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+        mode === 'listening'
+          ? 'bg-primary text-primary-foreground shadow-sm'
+          : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+      }`}
+      onclick={() => setMode('listening')}
+      aria-pressed={mode === 'listening'}
+    >
+      <Headphones class="size-4" aria-hidden="true" />
+      Listening
+    </button>
+    <button
+      type="button"
+      class={`inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+        mode === 'conversation'
+          ? 'bg-primary text-primary-foreground shadow-sm'
+          : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+      }`}
+      onclick={() => setMode('conversation')}
+      aria-pressed={mode === 'conversation'}
+    >
+      <MessagesSquare class="size-4" aria-hidden="true" />
+      Conversation
+    </button>
+  </div>
 
   {#if session.isAnonymous}
     <TranslateAuthGate onSignIn={() => (authDialogOpen = true)} />
-  {:else}
+  {:else if mode === 'listening'}
     <audio
       bind:this={translatedAudioElement}
       class="hidden"
@@ -489,6 +737,25 @@
       onStop={stopSession}
       onToggleTranslatedVoice={toggleTranslatedVoice}
       onEnableTranslatedVoice={enableTranslatedVoice}
+    />
+  {:else}
+    <TranslateConversationPanel
+      bind:sourceLanguage={conversationSourceLanguage}
+      bind:targetLanguage={conversationTargetLanguage}
+      {translationLanguages}
+      turns={conversationTurns}
+      running={conversationRunning}
+      starting={conversationStarting}
+      sessionPending={session.isPending}
+      statusLabel={currentConversationStatusLabel}
+      error={conversationError}
+      warning={conversationWarning}
+      startDisabled={conversationStartDisabled}
+      languagesValid={conversationLanguagesValid}
+      onStart={startConversation}
+      onStop={stopConversation}
+      onClearConversation={clearConversation}
+      onSwapLanguages={swapConversationLanguages}
     />
   {/if}
 </section>

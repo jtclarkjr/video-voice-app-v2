@@ -7,10 +7,7 @@
 
   type PanelVariant = 'side' | 'sheet'
 
-  let {
-    variant = 'side',
-    onClose = undefined
-  } = $props<{
+  let { variant = 'side', onClose = undefined } = $props<{
     variant?: PanelVariant
     onClose?: () => void
   }>()

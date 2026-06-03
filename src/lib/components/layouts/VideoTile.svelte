@@ -77,7 +77,8 @@
   {/if}
 
   <div class="absolute bottom-2 left-2 flex max-w-[calc(100%-1rem)] items-center gap-1.5">
-    <span class="min-w-0 truncate rounded-md bg-black/60 px-2 py-1 text-xs text-white">{label}</span>
+    <span class="min-w-0 truncate rounded-md bg-black/60 px-2 py-1 text-xs text-white">{label}</span
+    >
     {#if qualityClass}
       <span class={`size-3 rounded-full ${qualityClass}`} title={`Connection: ${networkQuality}`}
       ></span>
