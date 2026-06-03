@@ -237,12 +237,12 @@
   })
 </script>
 
-<div class="mx-auto grid max-w-2xl gap-6 py-8">
+<div class="mx-auto grid max-w-2xl gap-4 py-4 sm:gap-6 sm:py-8">
   <div class="text-center">
     <h1 class="text-2xl font-bold text-foreground">
       {isCreateFlow ? 'Create Room' : 'Join Room'}
     </h1>
-    <p class="mt-1 text-sm text-muted-foreground">
+    <p class="mt-1 break-all text-sm text-muted-foreground">
       {isCreateFlow ? 'Pick your room name before you join.' : roomId}
     </p>
   </div>

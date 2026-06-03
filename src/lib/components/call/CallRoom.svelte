@@ -223,6 +223,17 @@
     void goto('/')
   }
 
+  function closeMobilePanel() {
+    if (layout.chatOpen) {
+      layout.toggleChat()
+      return
+    }
+
+    if (layout.rosterOpen) {
+      layout.toggleRoster()
+    }
+  }
+
   $effect(() => {
     const panelDeps = {
       mode: layout.mode,
@@ -274,12 +285,12 @@
     </div>
   </div>
 {:else}
-  <div class="grid gap-4">
+  <div class="grid min-w-0 gap-4 overflow-x-hidden">
     <ConnectionBanner />
 
-    <div class="flex items-center justify-between">
-      <h2 class="text-lg font-semibold text-foreground">Room: {roomId}</h2>
-      <span class="text-sm text-muted-foreground">
+    <div class="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+      <h2 class="min-w-0 break-all text-lg font-semibold text-foreground">Room: {roomId}</h2>
+      <span class="shrink-0 text-sm text-muted-foreground">
         {Object.keys(participants.byId).length + 1} participant{Object.keys(participants.byId)
           .length === 0
           ? ''
@@ -287,8 +298,8 @@
       </span>
     </div>
 
-    <div class="flex items-start gap-4">
-      <div bind:this={layoutHost} class="min-w-0 flex-1">
+    <div class="min-w-0 md:flex md:items-start md:gap-4">
+      <div bind:this={layoutHost} class="min-w-0 md:flex-1">
         <LayoutContainer
           localStream={media.localStream}
           participants={participants.byId}
@@ -300,21 +311,43 @@
 
       {#if layout.chatOpen}
         <div
-          class="w-80 shrink-0 self-start overflow-hidden"
+          class="hidden w-80 shrink-0 self-start overflow-hidden md:block"
           style:height={sidePanelHeight ? `${sidePanelHeight}px` : undefined}
         >
-          <ChatPanel />
+          <ChatPanel variant="side" />
         </div>
       {:else if layout.rosterOpen}
         <div
-          class="w-80 shrink-0 self-start overflow-hidden"
+          class="hidden w-80 shrink-0 self-start overflow-hidden md:block"
           style:height={sidePanelHeight ? `${sidePanelHeight}px` : undefined}
         >
-          <ParticipantRoster localDisplayName={displayName} />
+          <ParticipantRoster localDisplayName={displayName} variant="side" />
         </div>
       {/if}
     </div>
 
     <CallControls onLeave={handleLeave} />
+
+    {#if layout.chatOpen || layout.rosterOpen}
+      <button
+        type="button"
+        class="fixed inset-0 z-40 bg-black/25 md:hidden"
+        onclick={closeMobilePanel}
+        aria-label="Close panel"
+      ></button>
+      <div
+        class="fixed inset-x-0 bottom-0 z-50 px-3 pb-[calc(env(safe-area-inset-bottom)_+_0.75rem)] md:hidden"
+      >
+        {#if layout.chatOpen}
+          <ChatPanel variant="sheet" onClose={closeMobilePanel} />
+        {:else if layout.rosterOpen}
+          <ParticipantRoster
+            localDisplayName={displayName}
+            variant="sheet"
+            onClose={closeMobilePanel}
+          />
+        {/if}
+      </div>
+    {/if}
   </div>
 {/if}

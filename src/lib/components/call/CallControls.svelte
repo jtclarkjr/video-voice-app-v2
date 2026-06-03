@@ -11,8 +11,8 @@
 
 <VoiceVideoSettingsDialog bind:open={settingsOpen} />
 
-<div class="flex items-center justify-center gap-2">
-  <div class="flex items-center gap-0.5 rounded-full bg-secondary px-1 py-1">
+<div class="flex max-w-full flex-wrap items-center justify-center gap-2">
+  <div class="flex shrink-0 items-center gap-0.5 rounded-full bg-secondary px-1 py-1">
     <CallAudioControls bind:settingsOpen />
 
     <div class="mx-0.5 h-5 w-px bg-border"></div>

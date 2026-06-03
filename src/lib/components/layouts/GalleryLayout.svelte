@@ -27,16 +27,16 @@
       return 'grid-cols-1'
     }
     if (total <= 4) {
-      return 'grid-cols-2'
+      return 'grid-cols-1 sm:grid-cols-2'
     }
     if (total <= 9) {
-      return 'grid-cols-3'
+      return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
     }
-    return 'grid-cols-4'
+    return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
   })
 </script>
 
-<div class={`grid gap-3 ${cols}`}>
+<div class={`grid min-w-0 gap-3 ${cols}`}>
   <div data-primary-call-frame>
     <VideoTile
       stream={localStream}

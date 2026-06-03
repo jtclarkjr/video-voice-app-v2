@@ -35,7 +35,7 @@
   )
 </script>
 
-<div class="min-w-0 grid gap-3">
+<div class="grid min-w-0 gap-3 overflow-hidden">
   <div data-primary-call-frame>
     <VideoTile
       stream={showScreenShare ? screenShareStream : (mainParticipant?.stream ?? null)}
@@ -45,11 +45,11 @@
       cameraOff={showScreenShare ? false : !mainParticipant?.videoEnabled}
       isSpeaking={mainParticipant?.isSpeaking}
       networkQuality={mainParticipant?.networkQuality}
-      className="min-h-[26rem]"
+      className="min-h-[14rem] sm:min-h-[20rem] md:min-h-[26rem]"
     />
   </div>
 
-  <div class="min-w-0 flex gap-3 overflow-x-auto pb-1">
+  <div class="flex min-w-0 max-w-full gap-3 overflow-x-auto overscroll-x-contain pb-1">
     <VideoTile
       stream={localStream}
       label={localDisplayName}
@@ -57,7 +57,7 @@
       mirrored
       cameraOff={!isCameraOn}
       isSpeaking={localSpeaking}
-      className="h-32 w-40 shrink-0"
+      className="h-28 w-36 shrink-0 sm:h-32 sm:w-40"
     />
     {#each stripParticipants as participant (participant.id)}
       <VideoTile
@@ -68,7 +68,7 @@
         networkQuality={participant.networkQuality}
         isPinned={pinnedId === participant.id}
         onPin={() => onPin(participant.id)}
-        className="h-32 w-40 shrink-0"
+        className="h-28 w-36 shrink-0 sm:h-32 sm:w-40"
       />
     {/each}
   </div>

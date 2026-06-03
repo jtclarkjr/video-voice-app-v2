@@ -1,15 +1,41 @@
 <script lang="ts">
+  import { X } from 'lucide-svelte'
   import { media } from '$lib/stores/media.svelte'
   import { participants } from '$lib/stores/participants.svelte'
 
-  let { localDisplayName = 'You' } = $props<{ localDisplayName?: string }>()
+  type PanelVariant = 'side' | 'sheet'
+
+  let {
+    localDisplayName = 'You',
+    variant = 'side',
+    onClose = undefined
+  } = $props<{
+    localDisplayName?: string
+    variant?: PanelVariant
+    onClose?: () => void
+  }>()
 
   const remoteList = $derived(participants.list)
+  const shellClass = $derived(
+    variant === 'sheet'
+      ? 'flex max-h-[min(70dvh,34rem)] min-h-0 flex-col overflow-hidden rounded-t-2xl border border-border bg-card shadow-2xl'
+      : 'flex h-full min-h-0 flex-col overflow-hidden border-l border-border bg-card'
+  )
 </script>
 
-<div class="flex h-full flex-col border-l border-border bg-card">
-  <div class="border-b border-border px-4 py-3">
+<div class={shellClass}>
+  <div class="flex shrink-0 items-center justify-between gap-3 border-b border-border px-4 py-3">
     <h3 class="text-sm font-semibold text-foreground">Participants ({remoteList.length + 1})</h3>
+    {#if variant === 'sheet'}
+      <button
+        type="button"
+        class="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        onclick={() => onClose?.()}
+        aria-label="Close participants"
+      >
+        <X class="h-4 w-4" aria-hidden="true" />
+      </button>
+    {/if}
   </div>
 
   <div class="min-h-0 flex-1 overflow-y-auto px-2 py-2">
