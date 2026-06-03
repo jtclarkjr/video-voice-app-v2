@@ -21,6 +21,8 @@
     copied,
     transcript,
     error,
+    warning,
+    startDisabled,
     onStart,
     onStop,
     onClearTranscript,
@@ -39,6 +41,8 @@
     copied: boolean
     transcript: string
     error: string | null
+    warning: string | null
+    startDisabled: boolean
     onStart: Action
     onStop: Action
     onClearTranscript: Action
@@ -109,7 +113,7 @@
         <button
           type="button"
           class="hidden min-h-11 items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50 lg:col-span-2 lg:inline-flex"
-          disabled={sessionPending || starting}
+          disabled={sessionPending || starting || startDisabled}
           onclick={() => void onStart()}
         >
           <Play class="size-4" aria-hidden="true" />
@@ -168,8 +172,16 @@
     {#if error}
       <p
         class="m-0 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+        role="alert"
       >
         {error}
+      </p>
+    {:else if warning}
+      <p
+        class="m-0 rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-primary"
+        role="status"
+      >
+        {warning}
       </p>
     {/if}
   </div>

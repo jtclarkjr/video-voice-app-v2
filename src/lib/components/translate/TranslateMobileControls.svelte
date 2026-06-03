@@ -13,6 +13,7 @@
     voiceControlsVisible,
     voicePlaybackBlocked,
     translatedVoiceMuted,
+    startDisabled,
     onStart,
     onStop,
     onToggleTranslatedVoice,
@@ -27,6 +28,7 @@
     voiceControlsVisible: boolean
     voicePlaybackBlocked: boolean
     translatedVoiceMuted: boolean
+    startDisabled: boolean
     onStart: Action
     onStop: Action
     onToggleTranslatedVoice: Action
@@ -83,7 +85,7 @@
       <button
         type="button"
         class="inline-flex min-h-11 min-w-28 items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
-        disabled={sessionPending || starting}
+        disabled={sessionPending || starting || startDisabled}
         onclick={() => void onStart()}
       >
         <Play class="size-4" aria-hidden="true" />

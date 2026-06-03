@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
   import AuthDialog from '$lib/components/auth/AuthDialog.svelte'
   import TranslateAuthGate from '$lib/components/translate/TranslateAuthGate.svelte'
   import TranslateHeader from '$lib/components/translate/TranslateHeader.svelte'
@@ -7,6 +7,12 @@
   import TranslateSettingsPanel from '$lib/components/translate/TranslateSettingsPanel.svelte'
   import TranslateTranscriptPanel from '$lib/components/translate/TranslateTranscriptPanel.svelte'
   import type { AuthConfig } from '$lib/server/auth-config'
+  import {
+    getMicrophoneAvailability,
+    getNoMicrophoneMessage,
+    noMicrophoneConnectedMessage,
+    type MicrophoneAvailability
+  } from '$lib/media/microphone'
   import { session } from '$lib/stores/session.svelte'
   import {
     defaultTranslationLanguage,
@@ -47,6 +53,8 @@
   let renewalRetryTimer = $state<number | null>(null)
   let renewalAttempts = $state(0)
   let renewalInProgress = $state(false)
+  let microphoneAvailability = $state<MicrophoneAvailability>('unknown')
+  let microphoneCheckPending = $state(false)
 
   const starting = $derived(status === 'requesting-microphone' || status === 'connecting')
   const renewing = $derived(status === 'renewing')
@@ -63,6 +71,39 @@
   const currentSessionLimitLabel = $derived(sessionLimitLabel())
   const currentStatusLabel = $derived(statusLabel())
   const currentTranslatedVoiceLabel = $derived(translatedVoiceLabel())
+  const microphoneUnavailable = $derived(microphoneAvailability === 'unavailable')
+  const microphoneWarning = $derived(
+    microphoneUnavailable && !running && !starting ? noMicrophoneConnectedMessage : null
+  )
+  const startDisabled = $derived(microphoneUnavailable)
+  const settingsWarning = $derived(error ? null : microphoneWarning)
+
+  onMount(() => {
+    let destroyed = false
+
+    const mediaDevices = navigator.mediaDevices
+    const syncMicrophoneAvailability = async () => {
+      microphoneCheckPending = true
+      const nextAvailability = await getMicrophoneAvailability(mediaDevices)
+      if (destroyed) {
+        return
+      }
+
+      microphoneAvailability = nextAvailability
+      microphoneCheckPending = false
+    }
+    const handleDeviceChange = () => {
+      void syncMicrophoneAvailability()
+    }
+
+    mediaDevices?.addEventListener('devicechange', handleDeviceChange)
+    void syncMicrophoneAvailability()
+
+    return () => {
+      destroyed = true
+      mediaDevices?.removeEventListener('devicechange', handleDeviceChange)
+    }
+  })
 
   onDestroy(() => {
     translationSession?.stop()
@@ -77,6 +118,11 @@
 
     if (session.isAnonymous) {
       authDialogOpen = true
+      return
+    }
+
+    if ((await refreshMicrophoneAvailability()) === 'unavailable') {
+      error = null
       return
     }
 
@@ -115,8 +161,23 @@
       status = 'idle'
       clearSessionTimers()
       resetTranslatedAudio()
+      const noMicrophoneMessage = getNoMicrophoneMessage(cause)
+      if (noMicrophoneMessage) {
+        microphoneAvailability = 'unavailable'
+        error = null
+        return
+      }
+
       error = cause instanceof Error ? cause.message : 'Could not start live translation.'
     }
+  }
+
+  async function refreshMicrophoneAvailability() {
+    microphoneCheckPending = true
+    const nextAvailability = await getMicrophoneAvailability()
+    microphoneAvailability = nextAvailability
+    microphoneCheckPending = false
+    return nextAvailability
   }
 
   function stopSession() {
@@ -325,6 +386,15 @@
   }
 
   function statusLabel() {
+    if (!running && !starting) {
+      if (microphoneUnavailable) {
+        return 'No microphone'
+      }
+      if (microphoneCheckPending) {
+        return 'Checking microphone'
+      }
+    }
+
     if (status === 'requesting-microphone') {
       return 'Microphone'
     }
@@ -382,6 +452,8 @@
         {copied}
         {transcript}
         {error}
+        warning={settingsWarning}
+        {startDisabled}
         onStart={startSession}
         onStop={stopSession}
         onClearTranscript={clearTranscript}
@@ -412,6 +484,7 @@
       {selectedLanguageLabel}
       statusLabel={currentStatusLabel}
       translatedVoiceLabel={currentTranslatedVoiceLabel}
+      {startDisabled}
       onStart={startSession}
       onStop={stopSession}
       onToggleTranslatedVoice={toggleTranslatedVoice}
