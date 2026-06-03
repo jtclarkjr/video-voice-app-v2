@@ -178,7 +178,7 @@
       </p>
     {:else if warning}
       <p
-        class="m-0 rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-primary"
+        class="m-0 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning"
         role="status"
       >
         {warning}
