@@ -1,7 +1,10 @@
 <script lang="ts">
+  import { tick } from 'svelte'
   import { Copy, Mic, Trash2 } from 'lucide-svelte'
 
   type Action = () => void | Promise<void>
+
+  const autoScrollThreshold = 48
 
   let {
     selectedLanguageLabel,
@@ -22,6 +25,47 @@
     onClearTranscript: Action
     onCopyTranscript: Action
   }>()
+
+  let scroller = $state<HTMLDivElement | null>(null)
+  let stickToBottom = $state(true)
+
+  $effect(() => {
+    const currentTranscript = transcript
+
+    if (!currentTranscript) {
+      stickToBottom = true
+    }
+
+    if (!stickToBottom) {
+      return
+    }
+
+    void tick().then(() => {
+      if (stickToBottom) {
+        scrollTranscriptToBottom()
+      }
+    })
+  })
+
+  function isNearBottom(element: HTMLDivElement) {
+    return element.scrollHeight - element.scrollTop - element.clientHeight <= autoScrollThreshold
+  }
+
+  function handleTranscriptScroll() {
+    if (!scroller) {
+      return
+    }
+
+    stickToBottom = isNearBottom(scroller)
+  }
+
+  function scrollTranscriptToBottom() {
+    if (!scroller) {
+      return
+    }
+
+    scroller.scrollTop = scroller.scrollHeight
+  }
 </script>
 
 <div class="surface-card min-h-[24rem] min-w-0 p-4 sm:min-h-[28rem] sm:p-6">
@@ -64,7 +108,9 @@
   </div>
 
   <div
-    class="max-h-[calc(100svh-18rem)] min-h-[18rem] overflow-y-auto rounded-2xl border border-border/70 bg-background/80 p-4 overscroll-contain sm:min-h-[22rem] sm:p-6 lg:max-h-none"
+    bind:this={scroller}
+    class="max-h-[calc(100svh-18rem)] min-h-[18rem] overflow-y-auto rounded-2xl border border-border/70 bg-background/80 p-4 pb-[calc(env(safe-area-inset-bottom)+6rem)] overscroll-contain sm:min-h-[22rem] sm:p-6 sm:pb-[calc(env(safe-area-inset-bottom)+6rem)] lg:max-h-none lg:pb-6"
+    onscroll={handleTranscriptScroll}
     aria-live="polite"
   >
     {#if transcript}
