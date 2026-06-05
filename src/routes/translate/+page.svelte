@@ -627,7 +627,7 @@
   }
 </script>
 
-<section class="grid gap-4 pb-24 sm:gap-6 lg:pb-0">
+<section class="grid gap-4 pb-[calc(env(safe-area-inset-bottom)+7rem)] sm:gap-6 lg:pb-0">
   <TranslateHeader
     selectedLanguageLabel={headerLanguageLabel}
     statusLabel={currentHeaderStatusLabel}
