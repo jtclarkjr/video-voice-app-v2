@@ -10,7 +10,9 @@
 <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
   <div class="grid gap-2 sm:gap-3">
     <p class="m-0 text-sm font-bold uppercase tracking-[0.2em] text-primary">Live Translation</p>
-    <h1 class="m-0 text-3xl leading-none font-semibold tracking-tight text-foreground sm:text-5xl">
+    <h1
+      class="sr-only m-0 text-3xl leading-none font-semibold tracking-tight text-foreground sm:not-sr-only sm:text-5xl"
+    >
       Translate Speech
     </h1>
   </div>
