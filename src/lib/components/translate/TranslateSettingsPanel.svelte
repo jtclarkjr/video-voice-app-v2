@@ -54,12 +54,12 @@
 
 <div
   class={`surface-card self-start p-3 sm:p-5 lg:sticky lg:top-24 ${
-    running || starting ? 'hidden sm:block' : ''
+    error || warning ? '' : 'hidden sm:block'
   }`}
 >
   <div class="grid gap-3 sm:gap-5">
     <div
-      class="grid gap-2 rounded-2xl border border-border/70 bg-background/70 p-3 sm:grid-cols-2 sm:gap-3 sm:border-0 sm:bg-transparent sm:p-0 lg:grid-cols-1"
+      class="hidden gap-2 rounded-2xl border border-border/70 bg-background/70 p-3 sm:grid sm:grid-cols-2 sm:gap-3 sm:border-0 sm:bg-transparent sm:p-0 lg:grid-cols-1"
     >
       <div class="grid gap-1.5 sm:gap-2">
         <div class="flex items-center justify-between gap-2">

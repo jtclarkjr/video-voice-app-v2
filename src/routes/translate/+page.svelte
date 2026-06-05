@@ -711,6 +711,8 @@
       />
 
       <TranslateTranscriptPanel
+        bind:targetLanguage
+        {translationLanguages}
         {transcript}
         {copied}
         {running}

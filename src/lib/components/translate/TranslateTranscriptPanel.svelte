@@ -1,12 +1,20 @@
 <script lang="ts">
   import { tick } from 'svelte'
-  import { Copy, Mic, Trash2 } from 'lucide-svelte'
+  import { Anchor, Copy, Mic, Trash2 } from 'lucide-svelte'
+  import type { TranslationLanguageCode } from '$lib/translation/types'
+
+  type TranslationLanguageOption = {
+    code: TranslationLanguageCode
+    label: string
+  }
 
   type Action = () => void | Promise<void>
 
   const autoScrollThreshold = 48
 
   let {
+    targetLanguage = $bindable<TranslationLanguageCode>('en'),
+    translationLanguages,
     selectedLanguageLabel,
     statusLabel,
     transcript,
@@ -16,6 +24,8 @@
     onClearTranscript,
     onCopyTranscript
   } = $props<{
+    targetLanguage: TranslationLanguageCode
+    translationLanguages: readonly TranslationLanguageOption[]
     selectedLanguageLabel: string
     statusLabel: string
     transcript: string
@@ -72,7 +82,24 @@
   <div class="mb-4 flex items-center justify-between gap-3">
     <div class="flex min-w-0 items-center gap-2">
       <Mic class="size-5 shrink-0 text-primary" aria-hidden="true" />
-      <h2 class="m-0 truncate text-lg font-semibold text-foreground">
+      <div class="relative min-w-0 sm:hidden">
+        <select
+          id="mobile-translation-language"
+          bind:value={targetLanguage}
+          disabled={running || starting}
+          class="m-0 w-full appearance-none truncate border-0 bg-transparent py-0 pl-0 pr-5 text-lg font-semibold text-foreground outline-none disabled:opacity-100"
+          aria-label="Select translation language"
+        >
+          {#each translationLanguages as language}
+            <option value={language.code}>{language.label}</option>
+          {/each}
+        </select>
+        <Anchor
+          class="pointer-events-none absolute right-0 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground"
+          aria-hidden="true"
+        />
+      </div>
+      <h2 class="m-0 hidden truncate text-lg font-semibold text-foreground sm:block">
         {selectedLanguageLabel}
       </h2>
     </div>
