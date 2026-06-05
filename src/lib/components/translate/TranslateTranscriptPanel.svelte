@@ -1,6 +1,6 @@
 <script lang="ts">
   import { tick } from 'svelte'
-  import { Anchor, Copy, Mic, Trash2 } from 'lucide-svelte'
+  import { ChevronDown, Copy, Mic, Trash2 } from 'lucide-svelte'
   import type { TranslationLanguageCode } from '$lib/translation/types'
 
   type TranslationLanguageOption = {
@@ -94,7 +94,7 @@
             <option value={language.code}>{language.label}</option>
           {/each}
         </select>
-        <Anchor
+        <ChevronDown
           class="pointer-events-none absolute right-0 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground"
           aria-hidden="true"
         />
