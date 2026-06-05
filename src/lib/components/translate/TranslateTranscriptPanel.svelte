@@ -68,7 +68,7 @@
   }
 </script>
 
-<div class="surface-card min-h-[24rem] min-w-0 p-4 sm:min-h-[28rem] sm:p-6">
+<div class="surface-card min-h-[20rem] min-w-0 p-4 sm:min-h-[28rem] sm:p-6">
   <div class="mb-4 flex items-center justify-between gap-3">
     <div class="flex min-w-0 items-center gap-2">
       <Mic class="size-5 shrink-0 text-primary" aria-hidden="true" />
@@ -109,7 +109,7 @@
 
   <div
     bind:this={scroller}
-    class="max-h-[calc(100svh-18rem)] min-h-[18rem] overflow-y-auto rounded-2xl border border-border/70 bg-background/80 p-4 pb-[calc(env(safe-area-inset-bottom)+6rem)] overscroll-contain sm:min-h-[22rem] sm:p-6 sm:pb-[calc(env(safe-area-inset-bottom)+6rem)] lg:max-h-none lg:pb-6"
+    class="max-h-[calc(100svh-22rem)] min-h-[14rem] overflow-y-auto rounded-2xl border border-border/70 bg-background/80 p-4 pb-[calc(env(safe-area-inset-bottom)+6rem)] overscroll-contain sm:max-h-[calc(100svh-18rem)] sm:min-h-[22rem] sm:p-6 sm:pb-[calc(env(safe-area-inset-bottom)+6rem)] lg:max-h-none lg:pb-6"
     onscroll={handleTranscriptScroll}
     aria-live="polite"
   >
@@ -120,7 +120,7 @@
         {transcript}
       </p>
     {:else}
-      <div class="flex min-h-[16rem] items-center justify-center text-center sm:min-h-[20rem]">
+      <div class="flex min-h-[12rem] items-center justify-center text-center sm:min-h-[20rem]">
         <p class="m-0 text-base text-muted-foreground">
           {running || starting ? 'Listening...' : 'Ready'}
         </p>
