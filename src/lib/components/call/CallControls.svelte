@@ -11,7 +11,11 @@
 
 <VoiceVideoSettingsDialog bind:open={settingsOpen} />
 
-<div class="flex max-w-full flex-wrap items-center justify-center gap-2">
+<div
+  class="flex max-w-full flex-wrap items-center justify-center gap-2"
+  role="toolbar"
+  aria-label="Call controls"
+>
   <div class="flex shrink-0 items-center gap-0.5 rounded-full bg-secondary px-1 py-1">
     <CallAudioControls bind:settingsOpen />
 

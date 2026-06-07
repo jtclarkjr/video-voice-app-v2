@@ -429,7 +429,7 @@
       }
 
       if (renewalAttempts < translationSessionMaxRenewAttempts) {
-        error = 'Could not renew translation session. Retrying...'
+        error = 'Could not renew translation session. Retrying…'
         scheduleRenewalRetry()
       } else {
         error =
@@ -551,7 +551,7 @@
     }
 
     if (renewing) {
-      return 'Renewing translation session...'
+      return 'Renewing translation session…'
     }
 
     if (renewalAttempts > 0) {
@@ -561,7 +561,7 @@
     }
 
     if (sessionTiming.shouldRenew) {
-      return 'Renewing translation session...'
+      return 'Renewing translation session…'
     }
 
     return `Auto-renew in ${formatTranslationSessionTime(sessionTiming.timeUntilRenewMs)}`
@@ -635,30 +635,37 @@
 
   <div
     class="inline-grid grid-cols-2 rounded-lg border border-border/70 bg-card/80 p-1 sm:w-fit"
+    role="tablist"
     aria-label="Translation mode"
   >
     <button
+      id="translation-mode-listening"
       type="button"
+      role="tab"
       class={`inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
         mode === 'listening'
           ? 'bg-primary text-primary-foreground shadow-sm'
           : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
       }`}
       onclick={() => setMode('listening')}
-      aria-pressed={mode === 'listening'}
+      aria-selected={mode === 'listening'}
+      aria-controls="translation-listening-panel"
     >
       <Headphones class="size-4" aria-hidden="true" />
       Listening
     </button>
     <button
+      id="translation-mode-conversation"
       type="button"
+      role="tab"
       class={`inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
         mode === 'conversation'
           ? 'bg-primary text-primary-foreground shadow-sm'
           : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
       }`}
       onclick={() => setMode('conversation')}
-      aria-pressed={mode === 'conversation'}
+      aria-selected={mode === 'conversation'}
+      aria-controls="translation-conversation-panel"
     >
       <MessagesSquare class="size-4" aria-hidden="true" />
       Conversation
@@ -677,88 +684,102 @@
       oncanplay={() => void playTranslatedAudio()}
     ></audio>
 
-    {#if sessionWarningVisible}
-      <div
-        class="flex items-center justify-between gap-3 rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-primary sm:px-4"
-        role="status"
-      >
-        <span class="min-w-0">{currentSessionLimitLabel}</span>
-        <span class="shrink-0 font-medium">{currentStatusLabel}</span>
-      </div>
-    {/if}
+    <div
+      id="translation-listening-panel"
+      class="grid gap-3 sm:gap-4"
+      role="tabpanel"
+      aria-labelledby="translation-mode-listening"
+    >
+      {#if sessionWarningVisible}
+        <div
+          class="flex items-center justify-between gap-3 rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-primary sm:px-4"
+          role="status"
+          aria-live="polite"
+        >
+          <span class="min-w-0">{currentSessionLimitLabel}</span>
+          <span class="shrink-0 font-medium">{currentStatusLabel}</span>
+        </div>
+      {/if}
 
-    <div class="grid gap-3 sm:gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
-      <TranslateSettingsPanel
-        bind:targetLanguage
-        {translationLanguages}
+      <div class="grid gap-3 sm:gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
+        <TranslateSettingsPanel
+          bind:targetLanguage
+          {translationLanguages}
+          {running}
+          {starting}
+          sessionPending={session.isPending}
+          {voiceControlsVisible}
+          {voicePlaybackBlocked}
+          {translatedVoiceMuted}
+          {copied}
+          {transcript}
+          {error}
+          warning={settingsWarning}
+          {startDisabled}
+          onStart={startSession}
+          onStop={stopSession}
+          onClearTranscript={clearTranscript}
+          onCopyTranscript={copyTranscript}
+          onToggleTranslatedVoice={toggleTranslatedVoice}
+          onEnableTranslatedVoice={enableTranslatedVoice}
+        />
+
+        <TranslateTranscriptPanel
+          bind:targetLanguage
+          {translationLanguages}
+          {transcript}
+          {copied}
+          {running}
+          {starting}
+          {selectedLanguageLabel}
+          statusLabel={currentStatusLabel}
+          onClearTranscript={clearTranscript}
+          onCopyTranscript={copyTranscript}
+        />
+      </div>
+
+      <TranslateMobileControls
         {running}
         {starting}
         sessionPending={session.isPending}
         {voiceControlsVisible}
         {voicePlaybackBlocked}
         {translatedVoiceMuted}
-        {copied}
-        {transcript}
-        {error}
-        warning={settingsWarning}
+        {selectedLanguageLabel}
+        statusLabel={currentStatusLabel}
+        translatedVoiceLabel={currentTranslatedVoiceLabel}
         {startDisabled}
         onStart={startSession}
         onStop={stopSession}
-        onClearTranscript={clearTranscript}
-        onCopyTranscript={copyTranscript}
         onToggleTranslatedVoice={toggleTranslatedVoice}
         onEnableTranslatedVoice={enableTranslatedVoice}
       />
-
-      <TranslateTranscriptPanel
-        bind:targetLanguage
+    </div>
+  {:else}
+    <div
+      id="translation-conversation-panel"
+      role="tabpanel"
+      aria-labelledby="translation-mode-conversation"
+    >
+      <TranslateConversationPanel
+        bind:sourceLanguage={conversationSourceLanguage}
+        bind:targetLanguage={conversationTargetLanguage}
         {translationLanguages}
-        {transcript}
-        {copied}
-        {running}
-        {starting}
-        {selectedLanguageLabel}
-        statusLabel={currentStatusLabel}
-        onClearTranscript={clearTranscript}
-        onCopyTranscript={copyTranscript}
+        turns={conversationTurns}
+        running={conversationRunning}
+        starting={conversationStarting}
+        sessionPending={session.isPending}
+        statusLabel={currentConversationStatusLabel}
+        error={conversationError}
+        warning={conversationWarning}
+        startDisabled={conversationStartDisabled}
+        languagesValid={conversationLanguagesValid}
+        onStart={startConversation}
+        onStop={stopConversation}
+        onClearConversation={clearConversation}
+        onSwapLanguages={swapConversationLanguages}
       />
     </div>
-
-    <TranslateMobileControls
-      {running}
-      {starting}
-      sessionPending={session.isPending}
-      {voiceControlsVisible}
-      {voicePlaybackBlocked}
-      {translatedVoiceMuted}
-      {selectedLanguageLabel}
-      statusLabel={currentStatusLabel}
-      translatedVoiceLabel={currentTranslatedVoiceLabel}
-      {startDisabled}
-      onStart={startSession}
-      onStop={stopSession}
-      onToggleTranslatedVoice={toggleTranslatedVoice}
-      onEnableTranslatedVoice={enableTranslatedVoice}
-    />
-  {:else}
-    <TranslateConversationPanel
-      bind:sourceLanguage={conversationSourceLanguage}
-      bind:targetLanguage={conversationTargetLanguage}
-      {translationLanguages}
-      turns={conversationTurns}
-      running={conversationRunning}
-      starting={conversationStarting}
-      sessionPending={session.isPending}
-      statusLabel={currentConversationStatusLabel}
-      error={conversationError}
-      warning={conversationWarning}
-      startDisabled={conversationStartDisabled}
-      languagesValid={conversationLanguagesValid}
-      onStart={startConversation}
-      onStop={stopConversation}
-      onClearConversation={clearConversation}
-      onSwapLanguages={swapConversationLanguages}
-    />
   {/if}
 </section>
 

@@ -22,7 +22,7 @@
   >
     <Languages class="size-4 text-primary" aria-hidden="true" />
     <span>{selectedLanguageLabel}</span>
-    <span class="h-1.5 w-1.5 rounded-full bg-success"></span>
+    <span class="h-1.5 w-1.5 rounded-full bg-success" aria-hidden="true"></span>
     <span>{statusLabel}</span>
   </div>
 </div>

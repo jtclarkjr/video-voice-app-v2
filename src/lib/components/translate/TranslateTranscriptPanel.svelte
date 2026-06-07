@@ -87,8 +87,9 @@
           id="mobile-translation-language"
           bind:value={targetLanguage}
           disabled={running || starting}
-          class="m-0 w-full appearance-none truncate border-0 bg-transparent py-0 pl-0 pr-5 text-lg font-semibold text-foreground outline-none disabled:opacity-100"
+          class="m-0 w-full appearance-none truncate border-0 bg-transparent py-0 pl-0 pr-5 text-lg font-semibold text-foreground disabled:opacity-100"
           aria-label="Select translation language"
+          name="mobile-translation-language"
         >
           {#each translationLanguages as language}
             <option value={language.code}>{language.label}</option>
@@ -128,6 +129,8 @@
       </div>
       <span
         class="hidden rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground sm:inline-flex"
+        role="status"
+        aria-live="polite"
       >
         {statusLabel}
       </span>
@@ -138,7 +141,10 @@
     bind:this={scroller}
     class="max-h-[calc(100svh-22rem)] min-h-[14rem] overflow-y-auto rounded-2xl border border-border/70 bg-background/80 p-4 pb-[calc(env(safe-area-inset-bottom)+6rem)] overscroll-contain sm:max-h-[calc(100svh-18rem)] sm:min-h-[22rem] sm:p-6 sm:pb-[calc(env(safe-area-inset-bottom)+6rem)] lg:max-h-none lg:pb-6"
     onscroll={handleTranscriptScroll}
+    role="log"
+    aria-label="Live translation transcript"
     aria-live="polite"
+    aria-relevant="additions text"
   >
     {#if transcript}
       <p
@@ -149,7 +155,7 @@
     {:else}
       <div class="flex min-h-[12rem] items-center justify-center text-center sm:min-h-[20rem]">
         <p class="m-0 text-base text-muted-foreground">
-          {running || starting ? 'Listening...' : 'Ready'}
+          {running || starting ? 'Listening…' : 'Ready'}
         </p>
       </div>
     {/if}

@@ -44,8 +44,11 @@
       <input
         id="prejoin-room-name"
         bind:value={pendingRoomName}
-        placeholder="Leave blank to auto-generate"
-        class="mt-3 w-full rounded-md border border-border bg-background px-3 py-2 outline-none focus:border-primary"
+        placeholder="Leave blank to auto-generate…"
+        name="room-name"
+        autocomplete="off"
+        spellcheck="false"
+        class="mt-3 w-full rounded-md border border-border bg-background px-3 py-2 focus:border-primary"
       />
       <p class="mt-2 text-sm text-muted-foreground">
         If you leave this empty, a unique room id will be generated for you.
@@ -65,18 +68,23 @@
         <input
           id="anonymous-display-name"
           bind:value={anonymousDisplayName}
-          placeholder="Enter your name"
+          placeholder="Enter your name…"
           maxlength="40"
-          class="w-full rounded-md border border-border bg-background px-3 py-2 outline-none focus:border-primary"
+          name="display-name"
+          autocomplete="name"
+          class="w-full rounded-md border border-border bg-background px-3 py-2 focus:border-primary"
+          aria-describedby="anonymous-display-name-help"
         />
-        <p class="m-0 text-sm text-muted-foreground">Add a display name to join the call.</p>
+        <p id="anonymous-display-name-help" class="m-0 text-sm text-muted-foreground">
+          Add a display name to join the call.
+        </p>
       </div>
     {:else}
       <p class="mt-1 text-base font-medium text-foreground">{resolvedDisplayName}</p>
     {/if}
 
     {#if sessionError}
-      <p class="mt-2 text-sm text-destructive">{sessionError}</p>
+      <p class="mt-2 text-sm text-destructive" role="alert">{sessionError}</p>
     {:else if roomMissingForAnonymous}
       <p class="mt-2 text-sm text-muted-foreground">
         Sign in to create a new room. Guests can join existing rooms.
@@ -95,7 +103,7 @@
       disabled={isJoinDisabled}
       onclick={onJoin}
     >
-      {sessionPending ? 'Preparing Session...' : joinLabel}
+      {sessionPending ? 'Preparing Session…' : joinLabel}
     </button>
 
     {#if roomMissingForAnonymous}

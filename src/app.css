@@ -85,6 +85,7 @@
 
   html {
     color-scheme: light;
+    -webkit-text-size-adjust: 100%;
   }
 
   .dark {
@@ -113,10 +114,39 @@
   select,
   textarea {
     font: inherit;
+    touch-action: manipulation;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  select {
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+
+  :where(a, button, input, select, textarea, [tabindex]:not([tabindex='-1'])):focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+    box-shadow: 0 0 0 4px var(--ring);
   }
 
   code {
     @apply rounded-md bg-primary/8 px-1.5 py-0.5 text-[0.95em];
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 

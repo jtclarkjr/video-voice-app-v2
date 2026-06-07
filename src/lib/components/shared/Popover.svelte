@@ -2,19 +2,45 @@
   import { onMount } from 'svelte'
   import { cn } from '$lib/utils'
 
+  type PopoverRenderProps = {
+    id: string
+    expanded: boolean
+  }
+
   let {
     open = $bindable(false),
+    id,
+    label = 'Options',
+    role = 'dialog',
     align = 'center',
     trigger,
     children
   } = $props<{
     open?: boolean
+    id: string
+    label?: string
+    role?: 'dialog' | 'menu'
     align?: 'start' | 'center' | 'end'
-    trigger?: () => unknown
+    trigger?: (props: PopoverRenderProps) => unknown
     children?: () => unknown
   }>()
 
   let root = $state<HTMLDivElement | null>(null)
+
+  function focusTrigger() {
+    root
+      ?.querySelector<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
+      ?.focus()
+  }
+
+  function closePopover(restoreFocus = false) {
+    open = false
+    if (restoreFocus) {
+      queueMicrotask(focusTrigger)
+    }
+  }
 
   onMount(() => {
     const handleClick = (event: MouseEvent) => {
@@ -22,13 +48,14 @@
         return
       }
       if (!root.contains(event.target as Node)) {
-        open = false
+        closePopover()
       }
     }
 
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && open) {
-        open = false
+        event.preventDefault()
+        closePopover(true)
       }
     }
 
@@ -44,11 +71,14 @@
 
 <div bind:this={root} class="relative">
   <div>
-    {@render trigger?.()}
+    {@render trigger?.({ id, expanded: open })}
   </div>
 
   {#if open}
     <div
+      {id}
+      {role}
+      aria-label={label}
       class={cn(
         'popover-shell absolute top-full z-30 mt-2 min-w-[240px]',
         align === 'start' && 'left-0',

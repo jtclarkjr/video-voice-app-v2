@@ -280,7 +280,7 @@
 {#if error}
   <div class="flex min-h-[60vh] items-center justify-center">
     <div class="grid gap-4">
-      <p class="text-lg text-destructive">{error}</p>
+      <p class="text-lg text-destructive" role="alert">{error}</p>
       <a href="/" class="text-sm text-primary underline">Back to lobby</a>
     </div>
   </div>
@@ -289,7 +289,7 @@
     <ConnectionBanner />
 
     <div class="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-      <h2 class="min-w-0 break-all text-lg font-semibold text-foreground">Room: {roomId}</h2>
+      <h1 class="min-w-0 break-all text-lg font-semibold text-foreground">Room: {roomId}</h1>
       <span class="shrink-0 text-sm text-muted-foreground">
         {Object.keys(participants.byId).length + 1} participant{Object.keys(participants.byId)
           .length === 0
@@ -333,6 +333,8 @@
         type="button"
         class="fixed inset-0 z-40 bg-black/25 md:hidden"
         onclick={closeMobilePanel}
+        tabindex="-1"
+        aria-hidden="true"
         aria-label="Close panel"
       ></button>
       <div

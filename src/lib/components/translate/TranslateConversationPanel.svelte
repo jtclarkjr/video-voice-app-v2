@@ -90,7 +90,8 @@
           <select
             bind:value={sourceLanguage}
             disabled={running || starting}
-            class="min-h-11 w-full rounded-md border border-border bg-background px-3 py-2 outline-none transition focus:border-primary disabled:opacity-60"
+            name="conversation-source-language"
+            class="min-h-11 w-full rounded-md border border-border bg-background px-3 py-2 transition focus:border-primary disabled:opacity-60"
           >
             {#each translationLanguages as language}
               <option value={language.code}>{language.label}</option>
@@ -114,7 +115,8 @@
           <select
             bind:value={targetLanguage}
             disabled={running || starting}
-            class="min-h-11 w-full rounded-md border border-border bg-background px-3 py-2 outline-none transition focus:border-primary disabled:opacity-60"
+            name="conversation-target-language"
+            class="min-h-11 w-full rounded-md border border-border bg-background px-3 py-2 transition focus:border-primary disabled:opacity-60"
           >
             {#each translationLanguages as language}
               <option value={language.code}>{language.label}</option>
@@ -127,6 +129,7 @@
         <p
           class="m-0 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
           role="alert"
+          aria-live="assertive"
         >
           {error}
         </p>
@@ -134,6 +137,7 @@
         <p
           class="m-0 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning"
           role="status"
+          aria-live="polite"
         >
           {warning}
         </p>
@@ -144,7 +148,10 @@
   <div class="surface-card min-h-[30rem] p-3 sm:p-5">
     <div
       class="max-h-[calc(100svh-20rem)] min-h-[22rem] overflow-y-auto rounded-2xl border border-border/70 bg-background/80 p-3 overscroll-contain sm:min-h-[26rem] sm:p-5 lg:max-h-none"
+      role="log"
+      aria-label="Live translated conversation"
       aria-live="polite"
+      aria-relevant="additions text"
     >
       {#if turns.length > 0}
         <div class="grid gap-3">
@@ -190,7 +197,7 @@
           <div class="grid justify-items-center gap-3">
             <MessageCircle class="size-8 text-muted-foreground" aria-hidden="true" />
             <p class="m-0 text-base text-muted-foreground">
-              {running || starting ? 'Listening...' : 'Ready'}
+              {running || starting ? 'Listening…' : 'Ready'}
             </p>
           </div>
         </div>

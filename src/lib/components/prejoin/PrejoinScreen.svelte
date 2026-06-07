@@ -228,7 +228,7 @@
       return 'Create and Join Call'
     }
     if (roomState === 'loading') {
-      return 'Checking Room...'
+      return 'Checking Room…'
     }
     if (roomState === 'missing' && !isAnonymous) {
       return 'Create and Join Call'
@@ -248,7 +248,10 @@
   </div>
 
   {#if needsGesture}
-    <div class="rounded-xl border border-border/30 bg-muted/50 px-6 py-10 text-center">
+    <div
+      class="rounded-xl border border-border/30 bg-muted/50 px-6 py-10 text-center"
+      role="status"
+    >
       <p class="text-sm text-muted-foreground">
         Your browser needs permission to use the camera and microphone.
       </p>
@@ -261,7 +264,10 @@
       </button>
     </div>
   {:else if permissionError}
-    <div class="rounded-xl border border-destructive/30 bg-destructive/10 px-6 py-10 text-center">
+    <div
+      class="rounded-xl border border-destructive/30 bg-destructive/10 px-6 py-10 text-center"
+      role="alert"
+    >
       <p class="text-sm text-destructive">{permissionError}</p>
       <a href="/" class="mt-4 inline-block text-sm text-primary underline">Back to lobby</a>
     </div>

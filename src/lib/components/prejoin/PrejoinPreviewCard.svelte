@@ -49,6 +49,7 @@
           : 'bg-destructive text-destructive-foreground'
       }`}
       aria-label={media.isMicOn ? 'Mute' : 'Unmute'}
+      aria-pressed={!media.isMicOn}
     >
       {#if media.isMicOn}
         <svg
@@ -96,6 +97,7 @@
           : 'bg-destructive text-destructive-foreground'
       }`}
       aria-label={cameraOn ? 'Turn off camera' : 'Turn on camera'}
+      aria-pressed={!cameraOn}
     >
       {#if cameraOn}
         <svg

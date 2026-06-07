@@ -18,6 +18,9 @@
   let error = $state<string | null>(null)
   let message = $state<string | null>(null)
   let isSubmitting = $state(false)
+  let nameInput = $state<HTMLInputElement | null>(null)
+  let emailInput = $state<HTMLInputElement | null>(null)
+  let passwordInput = $state<HTMLInputElement | null>(null)
 
   const emailSignUpDisabledMessage = 'Create account via email is currently disabled.'
 
@@ -60,13 +63,35 @@
       return
     }
 
+    const trimmedEmail = email.trim()
+    const trimmedName = name.trim()
+
     error = null
     message = null
+
+    if (!trimmedEmail) {
+      error = 'Enter your email address.'
+      emailInput?.focus()
+      return
+    }
+
+    if (!password) {
+      error = 'Enter your password.'
+      passwordInput?.focus()
+      return
+    }
+
+    if (mode === 'sign-up' && !trimmedName) {
+      error = 'Enter your name.'
+      nameInput?.focus()
+      return
+    }
+
     isSubmitting = true
 
     try {
       if (mode === 'sign-in') {
-        const result = await signInWithEmail(email.trim(), password)
+        const result = await signInWithEmail(trimmedEmail, password)
         if (result.error) {
           error = result.error.message
           return
@@ -80,7 +105,7 @@
         return
       }
 
-      const result = await signUpWithEmail(email.trim(), password, name.trim())
+      const result = await signUpWithEmail(trimmedEmail, password, trimmedName)
       if (result.error) {
         error = result.error.message
         return
@@ -131,6 +156,7 @@
         <div class="grid gap-2">
           {#if authConfig.providers.github}
             <button
+              type="button"
               class="flex items-center justify-center gap-2.5 rounded-xl border border-border/80 bg-card/70 px-4 py-3 text-sm font-medium text-foreground transition hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60"
               onclick={() => void handleSso('github')}
               disabled={isSubmitting}
@@ -141,6 +167,7 @@
           {/if}
           {#if authConfig.providers.google}
             <button
+              type="button"
               class="flex items-center justify-center gap-2.5 rounded-xl border border-border/80 bg-card/70 px-4 py-3 text-sm font-medium text-foreground transition hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60"
               onclick={() => void handleSso('google')}
               disabled={isSubmitting}
@@ -151,6 +178,7 @@
           {/if}
           {#if authConfig.providers.apple}
             <button
+              type="button"
               class="flex items-center justify-center gap-2.5 rounded-xl border border-border/80 bg-card/70 px-4 py-3 text-sm font-medium text-foreground transition hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60"
               onclick={() => void handleSso('apple')}
               disabled={isSubmitting}
@@ -176,6 +204,7 @@
             type="button"
             class={`rounded-full px-4 py-2 text-sm font-semibold transition ${mode === 'sign-in' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}
             onclick={() => (mode = 'sign-in')}
+            aria-pressed={mode === 'sign-in'}
           >
             Sign In
           </button>
@@ -185,6 +214,7 @@
               class={`rounded-full px-4 py-2 text-sm font-semibold transition ${mode === 'sign-up' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'} ${isEmailSignUpDisabled ? 'cursor-not-allowed opacity-50' : ''}`}
               aria-disabled={isEmailSignUpDisabled}
               aria-describedby={isEmailSignUpDisabled ? 'email-signup-disabled-tooltip' : undefined}
+              aria-pressed={mode === 'sign-up'}
               onclick={selectSignUpMode}
             >
               Create Account
@@ -206,10 +236,14 @@
             <label class="grid gap-2">
               <span class="text-sm font-medium text-foreground">Name</span>
               <input
+                bind:this={nameInput}
                 bind:value={name}
-                class="rounded-2xl border border-input bg-card px-4 py-3 outline-none focus:border-primary"
-                placeholder="Jane Doe"
+                class="rounded-2xl border border-input bg-card px-4 py-3 focus:border-primary"
+                placeholder="Jane Doe…"
+                name="name"
                 autocomplete="name"
+                aria-invalid={error === 'Enter your name.'}
+                aria-describedby={error === 'Enter your name.' ? 'auth-feedback' : undefined}
               />
             </label>
           {/if}
@@ -217,22 +251,32 @@
           <label class="grid gap-2">
             <span class="text-sm font-medium text-foreground">Email</span>
             <input
+              bind:this={emailInput}
               bind:value={email}
-              class="rounded-2xl border border-input bg-card px-4 py-3 outline-none focus:border-primary"
+              class="rounded-2xl border border-input bg-card px-4 py-3 focus:border-primary"
               placeholder="you@example.com"
+              name="email"
               autocomplete="email"
+              inputmode="email"
+              spellcheck="false"
               type="email"
+              aria-invalid={error === 'Enter your email address.'}
+              aria-describedby={error === 'Enter your email address.' ? 'auth-feedback' : undefined}
             />
           </label>
 
           <label class="grid gap-2">
             <span class="text-sm font-medium text-foreground">Password</span>
             <input
+              bind:this={passwordInput}
               bind:value={password}
-              class="rounded-2xl border border-input bg-card px-4 py-3 outline-none focus:border-primary"
-              placeholder="At least 8 characters"
+              class="rounded-2xl border border-input bg-card px-4 py-3 focus:border-primary"
+              placeholder="At least 8 characters…"
+              name="password"
               autocomplete={mode === 'sign-in' ? 'current-password' : 'new-password'}
               type="password"
+              aria-invalid={error === 'Enter your password.'}
+              aria-describedby={error === 'Enter your password.' ? 'auth-feedback' : undefined}
             />
           </label>
 
@@ -241,20 +285,23 @@
             class="rounded-2xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground transition hover:brightness-110 disabled:opacity-50"
             disabled={isSubmitting}
           >
+            <span>{mode === 'sign-in' ? 'Sign In' : 'Create Account'}</span>
             {#if isSubmitting}
-              {mode === 'sign-in' ? 'Signing In...' : 'Creating Account...'}
-            {:else}
-              {mode === 'sign-in' ? 'Sign In' : 'Create Account'}
+              <span aria-hidden="true">…</span>
+              <span class="sr-only">{mode === 'sign-in' ? 'Signing in…' : 'Creating account…'}</span
+              >
             {/if}
           </button>
         </form>
       {/if}
 
       {#if error}
-        <p class="text-sm text-destructive">{error}</p>
+        <p id="auth-feedback" class="text-sm text-destructive" role="alert" aria-live="assertive">
+          {error}
+        </p>
       {/if}
       {#if message}
-        <p class="text-sm text-muted-foreground">{message}</p>
+        <p class="text-sm text-muted-foreground" role="status" aria-live="polite">{message}</p>
       {/if}
       {#if !showEmail && !showSso}
         <p class="text-sm text-muted-foreground">No interactive sign-in providers are enabled.</p>

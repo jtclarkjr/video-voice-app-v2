@@ -37,12 +37,15 @@
   }
 </script>
 
-<Popover bind:open={popoverOpen} align="end">
-  {#snippet trigger()}
+<Popover bind:open={popoverOpen} id="account-popover" label="Account menu" align="end">
+  {#snippet trigger(popover)}
     <button
       type="button"
-      class="flex size-10 items-center justify-center rounded-full border border-border/70 bg-card/80 shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+      class="flex size-11 items-center justify-center rounded-full border border-border/70 bg-card/80 shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground sm:size-10"
       aria-label={session.isAnonymous ? 'Open account menu' : `${displayName()} account menu`}
+      aria-haspopup="dialog"
+      aria-expanded={popover.expanded}
+      aria-controls={popover.id}
       onclick={() => (popoverOpen = !popoverOpen)}
     >
       {#if !session.isAnonymous && avatarUrl()}
@@ -96,11 +99,13 @@
         </p>
         <div
           class="inline-flex w-fit items-center gap-1 rounded-full border border-border/70 bg-card/80 p-1"
+          role="group"
+          aria-label="Theme"
         >
           {#each themeOptions as option}
             <button
               type="button"
-              class={`flex h-8 w-8 items-center justify-center rounded-full p-0 transition ${
+              class={`flex size-9 items-center justify-center rounded-full p-0 transition ${
                 theme.current === option
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:bg-accent hover:text-foreground'

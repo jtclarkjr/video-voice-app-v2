@@ -79,7 +79,8 @@
           id="translation-language"
           bind:value={targetLanguage}
           disabled={running || starting}
-          class="min-h-10 w-full rounded-md border border-border bg-background px-3 py-2 outline-none transition focus:border-primary disabled:opacity-60 sm:min-h-11"
+          name="translation-language"
+          class="min-h-10 w-full rounded-md border border-border bg-background px-3 py-2 transition focus:border-primary disabled:opacity-60 sm:min-h-11"
         >
           {#each translationLanguages as language}
             <option value={language.code}>{language.label}</option>
@@ -115,6 +116,7 @@
           class="hidden min-h-11 items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50 lg:col-span-2 lg:inline-flex"
           disabled={sessionPending || starting || startDisabled}
           onclick={() => void onStart()}
+          aria-label={starting ? 'Starting live translation' : 'Start live translation'}
         >
           <Play class="size-4" aria-hidden="true" />
           {starting ? 'Starting' : 'Start'}
@@ -127,6 +129,9 @@
           class="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
           onclick={() => void onToggleTranslatedVoice()}
           aria-pressed={!translatedVoiceMuted}
+          aria-label={translatedVoiceMuted
+            ? 'Turn translated voice on'
+            : 'Turn translated voice off'}
         >
           {#if translatedVoiceMuted}
             <VolumeX class="size-4" aria-hidden="true" />
@@ -154,6 +159,7 @@
         class="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
         disabled={!transcript}
         onclick={() => void onClearTranscript()}
+        aria-label="Clear translation transcript"
       >
         <Trash2 class="size-4" aria-hidden="true" />
         Clear
@@ -163,6 +169,7 @@
         class="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
         disabled={!transcript.trim()}
         onclick={() => void onCopyTranscript()}
+        aria-label={copied ? 'Copied translation transcript' : 'Copy translation transcript'}
       >
         <Copy class="size-4" aria-hidden="true" />
         {copied ? 'Copied' : 'Copy'}
@@ -173,6 +180,7 @@
       <p
         class="m-0 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
         role="alert"
+        aria-live="assertive"
       >
         {error}
       </p>
@@ -180,6 +188,7 @@
       <p
         class="m-0 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning"
         role="status"
+        aria-live="polite"
       >
         {warning}
       </p>

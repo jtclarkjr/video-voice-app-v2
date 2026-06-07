@@ -16,7 +16,8 @@
         Microphone
       </span>
       <select
-        class="w-full rounded-xl border border-border/70 bg-card/60 px-4 py-3 outline-none"
+        class="w-full rounded-xl border border-border/70 bg-card/60 px-4 py-3"
+        name="microphone"
         value={media.selectedAudioInput}
         onchange={(event) =>
           media.setSelectedAudioInput((event.currentTarget as HTMLSelectElement).value)}
@@ -34,7 +35,8 @@
         Speaker
       </span>
       <select
-        class="w-full rounded-xl border border-border/70 bg-card/60 px-4 py-3 outline-none"
+        class="w-full rounded-xl border border-border/70 bg-card/60 px-4 py-3"
+        name="speaker"
         value={media.selectedAudioOutput}
         onchange={(event) =>
           media.setSelectedAudioOutput((event.currentTarget as HTMLSelectElement).value)}
@@ -52,7 +54,8 @@
         Camera
       </span>
       <select
-        class="w-full rounded-xl border border-border/70 bg-card/60 px-4 py-3 outline-none"
+        class="w-full rounded-xl border border-border/70 bg-card/60 px-4 py-3"
+        name="camera"
         value={media.selectedVideoInput}
         onchange={(event) =>
           media.setSelectedVideoInput((event.currentTarget as HTMLSelectElement).value)}

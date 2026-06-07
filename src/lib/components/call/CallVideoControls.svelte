@@ -30,6 +30,7 @@
   }`}
   onclick={() => media.toggleCamera()}
   aria-label={media.isCameraOn ? 'Turn off camera' : 'Turn on camera'}
+  aria-pressed={!media.isCameraOn}
 >
   {#if media.isCameraOn}
     <Video class="h-5 w-5" aria-hidden="true" />
@@ -38,13 +39,21 @@
   {/if}
 </button>
 
-<Popover bind:open={cameraPopoverOpen} align="start">
-  {#snippet trigger()}
+<Popover
+  bind:open={cameraPopoverOpen}
+  id="video-settings-popover"
+  label="Video settings"
+  align="start"
+>
+  {#snippet trigger(popover)}
     <button
       type="button"
       class="flex h-9 w-5 items-center justify-center rounded-r-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
       onclick={() => (cameraPopoverOpen = !cameraPopoverOpen)}
       aria-label="Video settings"
+      aria-haspopup="dialog"
+      aria-expanded={popover.expanded}
+      aria-controls={popover.id}
     >
       <ChevronDown class="h-3 w-3" aria-hidden="true" />
     </button>
@@ -56,6 +65,7 @@
         type="button"
         class="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left transition-colors hover:bg-accent"
         onclick={() => (showCameraDevices = !showCameraDevices)}
+        aria-expanded={showCameraDevices}
       >
         <div class="grid gap-0">
           <span class="text-sm font-semibold text-foreground">Camera</span>
@@ -89,6 +99,7 @@
                 media.setSelectedVideoInput(device.deviceId)
                 showCameraDevices = false
               }}
+              aria-pressed={device.deviceId === media.selectedVideoInput}
             >
               <span class="truncate">{device.label}</span>
               {#if device.deviceId === media.selectedVideoInput}
@@ -104,6 +115,7 @@
       <button
         type="button"
         class="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left transition-colors hover:bg-accent"
+        onclick={openSettings}
       >
         <span class="text-sm font-semibold text-foreground">Preview Camera</span>
         <svg

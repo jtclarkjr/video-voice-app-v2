@@ -133,6 +133,7 @@
         >
         <select
           class="rounded-2xl border border-input bg-card px-4 py-3"
+          name="settings-microphone"
           value={media.selectedAudioInput}
           onchange={(event) =>
             media.setSelectedAudioInput((event.currentTarget as HTMLSelectElement).value)}
@@ -148,6 +149,7 @@
         >
         <select
           class="rounded-2xl border border-input bg-card px-4 py-3"
+          name="settings-speaker"
           value={media.selectedAudioOutput}
           onchange={(event) =>
             media.setSelectedAudioOutput((event.currentTarget as HTMLSelectElement).value)}
@@ -171,6 +173,7 @@
           value={media.inputVolume}
           oninput={(event) =>
             media.setInputVolume(Number((event.currentTarget as HTMLInputElement).value))}
+          aria-label="Mic volume"
         />
       </label>
       <label class="grid gap-2">
@@ -184,6 +187,7 @@
           value={media.outputVolume}
           oninput={(event) =>
             media.setOutputVolume(Number((event.currentTarget as HTMLInputElement).value))}
+          aria-label="Speaker volume"
         />
       </label>
     </div>
@@ -194,6 +198,7 @@
           type="button"
           class="rounded-2xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
           onclick={() => void (micTestStream ? stopMicTest() : startMicTest())}
+          aria-pressed={micTestStream !== null}
         >
           {micTestStream ? 'Stop Mic Test' : 'Start Mic Test'}
         </button>
@@ -202,6 +207,8 @@
           width="320"
           height="18"
           class="h-[18px] w-full rounded-full bg-muted md:flex-1"
+          role="img"
+          aria-label="Microphone test input level"
         ></canvas>
       </div>
       <div class="grid gap-3 md:grid-cols-2">
@@ -211,6 +218,7 @@
           <span class="text-sm font-semibold">Echo Cancellation</span>
           <input
             type="checkbox"
+            name="echo-cancellation"
             checked={media.echoCancellation}
             onchange={(event) =>
               media.setEchoCancellation((event.currentTarget as HTMLInputElement).checked)}
@@ -222,6 +230,7 @@
           <span class="text-sm font-semibold">Automatic Gain Control</span>
           <input
             type="checkbox"
+            name="automatic-gain-control"
             checked={media.autoGainControl}
             onchange={(event) =>
               media.setAutoGainControl((event.currentTarget as HTMLInputElement).checked)}
@@ -234,6 +243,7 @@
         >
         <select
           class="rounded-2xl border border-input bg-card px-4 py-3"
+          name="noise-suppression"
           value={media.noiseSuppression}
           onchange={(event) =>
             media.setNoiseSuppression(
@@ -262,6 +272,7 @@
               type="button"
               class="rounded-2xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
               onclick={() => void startPreview()}
+              aria-pressed={previewStream !== null}
             >
               Test Camera
             </button>
@@ -283,6 +294,7 @@
         >
         <select
           class="rounded-2xl border border-input bg-card px-4 py-3"
+          name="settings-camera"
           value={media.selectedVideoInput}
           onchange={(event) =>
             media.setSelectedVideoInput((event.currentTarget as HTMLSelectElement).value)}

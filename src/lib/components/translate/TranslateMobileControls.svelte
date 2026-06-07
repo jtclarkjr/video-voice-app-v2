@@ -44,7 +44,9 @@
       <p class="m-0 truncate text-sm font-medium text-foreground">
         {selectedLanguageLabel}
       </p>
-      <p class="m-0 text-xs text-muted-foreground">{statusLabel}</p>
+      <p class="m-0 text-xs text-muted-foreground" role="status" aria-live="polite">
+        {statusLabel}
+      </p>
     </div>
     {#if voiceControlsVisible}
       <button
@@ -77,6 +79,7 @@
         type="button"
         class="inline-flex min-h-11 min-w-28 items-center justify-center gap-2 rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground"
         onclick={() => void onStop()}
+        aria-label="Stop live translation"
       >
         <Square class="size-4" aria-hidden="true" />
         Stop
@@ -87,6 +90,7 @@
         class="inline-flex min-h-11 min-w-28 items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
         disabled={sessionPending || starting || startDisabled}
         onclick={() => void onStart()}
+        aria-label={starting ? 'Starting live translation' : 'Start live translation'}
       >
         <Play class="size-4" aria-hidden="true" />
         {starting ? 'Starting' : 'Start'}

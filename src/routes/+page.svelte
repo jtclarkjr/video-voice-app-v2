@@ -89,14 +89,15 @@
       </div>
 
       {#if isLoading}
-        <div class="grid gap-2">
+        <div class="grid gap-2" role="status" aria-label="Loading active rooms">
+          <span class="sr-only">Loading active rooms…</span>
           {#each [1, 2, 3] as item}
-            <div class="h-14 animate-pulse rounded-xl bg-muted/50"></div>
+            <div class="h-14 animate-pulse rounded-xl bg-muted/50" aria-hidden="true"></div>
           {/each}
         </div>
       {:else if rooms.length === 0}
         <div class="rounded-xl border border-dashed border-border/70 px-6 py-10 text-center">
-          <p class="m-0 text-sm text-muted-foreground">No active rooms</p>
+          <p class="m-0 text-sm text-muted-foreground" role="status">No active rooms</p>
         </div>
       {:else}
         <div class="grid gap-2">

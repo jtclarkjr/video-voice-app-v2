@@ -16,6 +16,7 @@
   }>()
 
   const remoteList = $derived(participants.list)
+  const titleId = 'participant-roster-title'
   const shellClass = $derived(
     variant === 'sheet'
       ? 'flex max-h-[min(70dvh,34rem)] min-h-0 flex-col overflow-hidden rounded-t-2xl border border-border bg-card shadow-2xl'
@@ -23,9 +24,16 @@
   )
 </script>
 
-<div class={shellClass}>
+<div
+  class={shellClass}
+  role={variant === 'sheet' ? 'dialog' : 'region'}
+  aria-modal={variant === 'sheet' ? 'true' : undefined}
+  aria-labelledby={titleId}
+>
   <div class="flex shrink-0 items-center justify-between gap-3 border-b border-border px-4 py-3">
-    <h3 class="text-sm font-semibold text-foreground">Participants ({remoteList.length + 1})</h3>
+    <h3 id={titleId} class="text-sm font-semibold text-foreground">
+      Participants ({remoteList.length + 1})
+    </h3>
     {#if variant === 'sheet'}
       <button
         type="button"
@@ -38,8 +46,8 @@
     {/if}
   </div>
 
-  <div class="min-h-0 flex-1 overflow-y-auto px-2 py-2">
-    <div class="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-accent/50">
+  <div class="min-h-0 flex-1 overflow-y-auto px-2 py-2" role="list" aria-label="Participants">
+    <div class="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-accent/50" role="listitem">
       <div
         class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground"
       >
@@ -49,6 +57,10 @@
         <div class="truncate text-sm font-medium text-foreground">{localDisplayName}</div>
       </div>
       <div class="flex items-center gap-1.5">
+        <span class="sr-only">
+          {media.isMicOn ? 'Microphone on' : 'Microphone muted'};
+          {media.isCameraOn ? 'camera on' : 'camera off'}.
+        </span>
         {#if media.isMicOn}
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -122,7 +134,7 @@
     </div>
 
     {#each remoteList as participant (participant.id)}
-      <div class="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-accent/50">
+      <div class="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-accent/50" role="listitem">
         <div
           class={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground ${participant.isSpeaking ? 'ring-2 ring-green-500' : ''}`}
         >
@@ -135,10 +147,16 @@
           {/if}
         </div>
         <div class="flex items-center gap-1.5">
+          <span class="sr-only">
+            Connection: {participant.networkQuality};
+            {participant.audioEnabled ? 'microphone on' : 'microphone muted'};
+            {participant.videoEnabled ? 'camera on' : 'camera off'}.
+          </span>
           {#if participant.networkQuality !== 'unknown' && participant.networkQuality !== 'good'}
             <span
               class={`h-2 w-2 rounded-full ${participant.networkQuality === 'fair' ? 'bg-yellow-500' : 'bg-destructive'}`}
               title={`Connection: ${participant.networkQuality}`}
+              aria-hidden="true"
             ></span>
           {/if}
           {#if participant.audioEnabled}

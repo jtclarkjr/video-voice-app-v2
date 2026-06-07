@@ -7,15 +7,20 @@
 {#if connection.phase === 'reconnecting'}
   <div
     class="flex items-center justify-center gap-3 rounded-[1.5rem] bg-yellow-500/12 px-4 py-3 text-sm text-yellow-700 dark:text-yellow-300"
+    role="status"
+    aria-live="polite"
   >
     <div
       class="size-4 animate-spin rounded-full border-2 border-current border-r-transparent"
+      aria-hidden="true"
     ></div>
-    <span>Reconnecting... attempt {connection.reconnectAttempts}</span>
+    <span>Reconnecting… attempt {connection.reconnectAttempts}</span>
   </div>
 {:else if connection.phase === 'failed'}
   <div
     class="flex items-center justify-center gap-3 rounded-[1.5rem] bg-destructive/12 px-4 py-3 text-sm text-destructive"
+    role="alert"
+    aria-live="assertive"
   >
     <span>Connection lost</span>
     {#if onRetry}

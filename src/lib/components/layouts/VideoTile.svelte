@@ -46,25 +46,31 @@
     }
     return ''
   })
+
+  const tileClass = $derived(
+    cn(
+      'relative block aspect-video w-full min-w-0 overflow-hidden rounded-xl bg-muted text-left transition-shadow',
+      isSpeaking && 'ring-2 ring-green-500 shadow-[0_0_12px_rgba(34,197,94,0.3)]',
+      isPinned && 'ring-2 ring-primary',
+      className
+    )
+  )
 </script>
 
-<button
-  type="button"
-  class={cn(
-    'relative block aspect-video w-full min-w-0 overflow-hidden rounded-xl bg-muted text-left transition-shadow',
-    isSpeaking && 'ring-2 ring-green-500 shadow-[0_0_12px_rgba(34,197,94,0.3)]',
-    isPinned && 'ring-2 ring-primary',
-    className
-  )}
-  onclick={() => onPin?.()}
->
+{#snippet tileContent()}
   <video
     bind:this={videoElement}
     autoplay
     playsinline
     {muted}
     class={cn('h-full w-full object-cover', mirrored && 'scale-x-[-1]', cameraOff && 'invisible')}
+    aria-label={`${label} video`}
   ></video>
+
+  <span class="sr-only">
+    {isSpeaking ? `${label} is speaking. ` : ''}{cameraOff ? 'Camera off.' : 'Camera on.'}
+    Connection: {networkQuality}.
+  </span>
 
   {#if cameraOff}
     <div class="absolute inset-0 flex items-center justify-center">
@@ -80,8 +86,27 @@
     <span class="min-w-0 truncate rounded-md bg-black/60 px-2 py-1 text-xs text-white">{label}</span
     >
     {#if qualityClass}
-      <span class={`size-3 rounded-full ${qualityClass}`} title={`Connection: ${networkQuality}`}
+      <span
+        class={`size-3 rounded-full ${qualityClass}`}
+        title={`Connection: ${networkQuality}`}
+        aria-hidden="true"
       ></span>
     {/if}
   </div>
-</button>
+{/snippet}
+
+{#if onPin}
+  <button
+    type="button"
+    class={tileClass}
+    onclick={() => onPin?.()}
+    aria-label={`${isPinned ? 'Unpin' : 'Pin'} ${label}`}
+    aria-pressed={isPinned}
+  >
+    {@render tileContent()}
+  </button>
+{:else}
+  <div class={tileClass} role="group" aria-label={`Video tile for ${label}`}>
+    {@render tileContent()}
+  </div>
+{/if}

@@ -25,6 +25,7 @@
   }`}
   onclick={() => void (screenShare.localActive ? stopScreenShare() : startScreenShare())}
   aria-label={screenShare.localActive ? 'Stop sharing' : 'Share screen'}
+  aria-pressed={screenShare.localActive}
 >
   {#if screenShare.localActive}
     <MonitorX class="h-5 w-5" aria-hidden="true" />
@@ -42,7 +43,9 @@
         : 'text-muted-foreground hover:bg-accent hover:text-foreground'
     }`}
     onclick={() => layout.toggleChat()}
-    aria-label="Toggle chat"
+    aria-label={chat.unreadCount > 0 ? `Toggle chat, ${chat.unreadCount} unread` : 'Toggle chat'}
+    aria-pressed={layout.chatOpen}
+    aria-expanded={layout.chatOpen}
   >
     <MessageCircle class="h-5 w-5" aria-hidden="true" />
   </button>
@@ -50,6 +53,7 @@
   {#if chat.unreadCount > 0}
     <span
       class="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground"
+      aria-hidden="true"
     >
       {chat.unreadCount > 99 ? '99+' : chat.unreadCount}
     </span>
@@ -65,6 +69,8 @@
   }`}
   onclick={() => layout.toggleRoster()}
   aria-label="Toggle participants"
+  aria-pressed={layout.rosterOpen}
+  aria-expanded={layout.rosterOpen}
 >
   <Users class="h-5 w-5" aria-hidden="true" />
 </button>
@@ -74,6 +80,7 @@
   class="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
   onclick={() => layout.toggleMode()}
   aria-label={layout.mode === 'gallery' ? 'Speaker view' : 'Gallery view'}
+  aria-pressed={layout.mode === 'speaker'}
 >
   {#if layout.mode === 'gallery'}
     <LayoutPanelTop class="h-5 w-5" aria-hidden="true" />

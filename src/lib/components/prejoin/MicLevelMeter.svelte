@@ -62,6 +62,12 @@
   <span class="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground"
     >Microphone</span
   >
-  <canvas bind:this={canvas} width="400" height="20" class="h-5 w-full rounded-full bg-muted"
+  <canvas
+    bind:this={canvas}
+    width="400"
+    height="20"
+    class="h-5 w-full rounded-full bg-muted"
+    role="img"
+    aria-label="Microphone input level"
   ></canvas>
 </div>

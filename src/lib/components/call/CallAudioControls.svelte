@@ -38,6 +38,7 @@
   }`}
   onclick={() => media.toggleMic()}
   aria-label={media.isMicOn ? 'Mute' : 'Unmute'}
+  aria-pressed={!media.isMicOn}
 >
   {#if media.isMicOn}
     <Mic class="h-5 w-5" aria-hidden="true" />
@@ -46,13 +47,21 @@
   {/if}
 </button>
 
-<Popover bind:open={micPopoverOpen} align="start">
-  {#snippet trigger()}
+<Popover
+  bind:open={micPopoverOpen}
+  id="audio-settings-popover"
+  label="Audio settings"
+  align="start"
+>
+  {#snippet trigger(popover)}
     <button
       type="button"
       class="flex h-9 w-5 items-center justify-center rounded-r-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
       onclick={() => (micPopoverOpen = !micPopoverOpen)}
       aria-label="Audio settings"
+      aria-haspopup="dialog"
+      aria-expanded={popover.expanded}
+      aria-controls={popover.id}
     >
       <ChevronDown class="h-3 w-3" aria-hidden="true" />
     </button>
@@ -64,6 +73,7 @@
         type="button"
         class="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left transition-colors hover:bg-accent"
         onclick={() => (showInputDevices = !showInputDevices)}
+        aria-expanded={showInputDevices}
       >
         <div class="grid gap-0">
           <span class="text-sm font-semibold text-foreground">Input Device</span>
@@ -97,6 +107,7 @@
                 media.setSelectedAudioInput(device.deviceId)
                 showInputDevices = false
               }}
+              aria-pressed={device.deviceId === media.selectedAudioInput}
             >
               <span class="truncate">{device.label}</span>
               {#if device.deviceId === media.selectedAudioInput}
@@ -111,6 +122,7 @@
         type="button"
         class="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left transition-colors hover:bg-accent"
         onclick={() => (showOutputDevices = !showOutputDevices)}
+        aria-expanded={showOutputDevices}
       >
         <div class="grid gap-0">
           <span class="text-sm font-semibold text-foreground">Output Device</span>
@@ -144,6 +156,7 @@
                 media.setSelectedAudioOutput(device.deviceId)
                 showOutputDevices = false
               }}
+              aria-pressed={device.deviceId === media.selectedAudioOutput}
             >
               <span class="truncate">{device.label}</span>
               {#if device.deviceId === media.selectedAudioOutput}
@@ -166,6 +179,7 @@
           oninput={(event) =>
             media.setInputVolume(Number((event.currentTarget as HTMLInputElement).value))}
           class="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-muted accent-primary"
+          aria-label="Input volume"
         />
       </div>
 
@@ -179,6 +193,7 @@
           oninput={(event) =>
             media.setOutputVolume(Number((event.currentTarget as HTMLInputElement).value))}
           class="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-muted accent-primary"
+          aria-label="Output volume"
         />
       </div>
 
@@ -188,6 +203,7 @@
         type="button"
         class="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left transition-colors hover:bg-accent"
         onclick={() => media.toggleDeafen()}
+        aria-pressed={media.isDeafened}
       >
         <span class="text-sm font-semibold text-foreground">Deafen</span>
         <div
