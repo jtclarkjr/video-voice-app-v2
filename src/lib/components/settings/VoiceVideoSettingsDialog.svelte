@@ -207,7 +207,6 @@
           width="320"
           height="18"
           class="h-[18px] w-full rounded-full bg-muted md:flex-1"
-          role="img"
           aria-label="Microphone test input level"
         ></canvas>
       </div>

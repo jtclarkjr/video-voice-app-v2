@@ -67,7 +67,6 @@
     width="400"
     height="20"
     class="h-5 w-full rounded-full bg-muted"
-    role="img"
     aria-label="Microphone input level"
   ></canvas>
 </div>

@@ -16,7 +16,9 @@
   let dialogElement = $state<HTMLDivElement | null>(null)
   let previousFocus: HTMLElement | null = null
 
-  const titleId = `modal-title-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'dialog'}`
+  const titleId = $derived(
+    `modal-title-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'dialog'}`
+  )
   const focusableSelector = [
     'a[href]',
     'button:not(:disabled)',
