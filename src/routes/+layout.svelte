@@ -1,11 +1,15 @@
 <script lang="ts">
   import '../app.css'
+  import { dev } from '$app/environment'
+  import { inject } from '@vercel/analytics'
   import favicon from '$lib/assets/favicon.svg'
   import { onMount } from 'svelte'
   import AuthControls from '$lib/components/auth/AuthControls.svelte'
   import { session } from '$lib/stores/session.svelte'
   import { theme } from '$lib/stores/theme.svelte'
   import type { AuthConfig } from '$lib/server/auth-config'
+
+  inject({ mode: dev ? 'development' : 'production' })
 
   let { children, data } = $props<{
     children: () => unknown
