@@ -16,7 +16,9 @@
       <Languages class="size-7" aria-hidden="true" />
     </div>
     <div class="grid gap-2">
-      <h2 class="m-0 text-2xl font-semibold text-foreground">Sign In Required</h2>
+      <h2 class="m-0 text-2xl font-semibold text-foreground">
+        Sign In Required
+      </h2>
       <p class="m-0 text-sm leading-6 text-muted-foreground">
         Live translation sessions are available to signed-in users.
       </p>

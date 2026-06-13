@@ -37,7 +37,9 @@
   >
     Skip to content
   </a>
-  <header class="relative z-20 border-b border-border/70 bg-background/85 backdrop-blur">
+  <header
+    class="relative z-20 border-b border-border/70 bg-background/85 backdrop-blur"
+  >
     <div
       class="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:gap-4 sm:px-6 sm:py-4"
     >

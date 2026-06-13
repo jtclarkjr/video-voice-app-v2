@@ -13,8 +13,8 @@ const noMicrophoneErrorNames = new Set([
 ])
 
 export async function getMicrophoneAvailability(
-  mediaDevices: MediaDeviceEnumerator | null | undefined =
-    globalThis.navigator?.mediaDevices
+  mediaDevices: MediaDeviceEnumerator | null | undefined = globalThis.navigator
+    ?.mediaDevices
 ): Promise<MicrophoneAvailability> {
   if (!mediaDevices) {
     return 'unknown'

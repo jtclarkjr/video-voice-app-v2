@@ -16,7 +16,9 @@
   role="toolbar"
   aria-label="Call controls"
 >
-  <div class="flex shrink-0 items-center gap-0.5 rounded-full bg-secondary px-1 py-1">
+  <div
+    class="flex shrink-0 items-center gap-0.5 rounded-full bg-secondary px-1 py-1"
+  >
     <CallAudioControls bind:settingsOpen />
 
     <div class="mx-0.5 h-5 w-px bg-border"></div>

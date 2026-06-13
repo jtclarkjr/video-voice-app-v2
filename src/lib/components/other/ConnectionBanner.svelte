@@ -1,7 +1,9 @@
 <script lang="ts">
   import { connection } from '$lib/stores/connection.svelte'
 
-  let { onRetry = undefined as (() => void) | undefined } = $props<{ onRetry?: () => void }>()
+  let { onRetry = undefined as (() => void) | undefined } = $props<{
+    onRetry?: () => void
+  }>()
 </script>
 
 {#if connection.phase === 'reconnecting'}

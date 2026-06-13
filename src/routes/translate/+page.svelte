@@ -50,7 +50,9 @@
   const defaultConversationTargetLanguage: TranslationLanguageCode = 'ja'
 
   let mode = $state<TranslationMode>('listening')
-  let targetLanguage = $state<TranslationLanguageCode>(defaultTranslationLanguage)
+  let targetLanguage = $state<TranslationLanguageCode>(
+    defaultTranslationLanguage
+  )
   let conversationSourceLanguage = $state<TranslationLanguageCode>(
     defaultConversationSourceLanguage
   )
@@ -66,7 +68,9 @@
   let status = $state<TranslationConnectionStatus>('idle')
   let conversationStatus = $state<TranslationConversationStatus>('idle')
   let translationSession = $state<LiveTranslationSession | null>(null)
-  let conversationSession = $state<LiveTranslationConversationSession | null>(null)
+  let conversationSession = $state<LiveTranslationConversationSession | null>(
+    null
+  )
   let conversationRunId = $state(0)
   let translatedAudioElement = $state<HTMLAudioElement | null>(null)
   let translatedAudioStream = $state<MediaStream | null>(null)
@@ -81,18 +85,23 @@
   let microphoneAvailability = $state<MicrophoneAvailability>('unknown')
   let microphoneCheckPending = $state(false)
 
-  const starting = $derived(status === 'requesting-microphone' || status === 'connecting')
+  const starting = $derived(
+    status === 'requesting-microphone' || status === 'connecting'
+  )
   const renewing = $derived(status === 'renewing')
   const active = $derived(translationSession !== null && status === 'listening')
   const running = $derived(active || renewing)
   const conversationStarting = $derived(
-    conversationStatus === 'requesting-microphone' || conversationStatus === 'connecting'
+    conversationStatus === 'requesting-microphone' ||
+      conversationStatus === 'connecting'
   )
   const conversationRenewing = $derived(conversationStatus === 'renewing')
   const conversationActive = $derived(
     conversationSession !== null && conversationStatus === 'listening'
   )
-  const conversationRunning = $derived(conversationActive || conversationRenewing)
+  const conversationRunning = $derived(
+    conversationActive || conversationRenewing
+  )
   const voiceControlsVisible = $derived(running || starting)
   const conversationLanguages = $derived(getConversationLanguages())
   const conversationLanguagesValid = $derived(
@@ -106,30 +115,44 @@
   const sessionWarningVisible = $derived(
     mode === 'listening' && running && sessionTiming?.shouldWarn === true
   )
-  const selectedLanguageLabel = $derived(getTranslationLanguageLabel(targetLanguage))
+  const selectedLanguageLabel = $derived(
+    getTranslationLanguageLabel(targetLanguage)
+  )
   const selectedConversationLanguageLabel = $derived(
     `${getTranslationLanguageLabel(conversationSourceLanguage)} / ${getTranslationLanguageLabel(
       conversationTargetLanguage
     )}`
   )
   const headerLanguageLabel = $derived(
-    mode === 'conversation' ? selectedConversationLanguageLabel : selectedLanguageLabel
+    mode === 'conversation'
+      ? selectedConversationLanguageLabel
+      : selectedLanguageLabel
   )
   const currentSessionLimitLabel = $derived(sessionLimitLabel())
   const currentStatusLabel = $derived(statusLabel())
   const currentConversationStatusLabel = $derived(conversationStatusLabel())
   const currentHeaderStatusLabel = $derived(
-    mode === 'conversation' ? currentConversationStatusLabel : currentStatusLabel
+    mode === 'conversation'
+      ? currentConversationStatusLabel
+      : currentStatusLabel
   )
   const currentTranslatedVoiceLabel = $derived(translatedVoiceLabel())
-  const microphoneUnavailable = $derived(microphoneAvailability === 'unavailable')
+  const microphoneUnavailable = $derived(
+    microphoneAvailability === 'unavailable'
+  )
   const microphoneWarning = $derived(
-    microphoneUnavailable && !running && !starting && !conversationRunning && !conversationStarting
+    microphoneUnavailable &&
+      !running &&
+      !starting &&
+      !conversationRunning &&
+      !conversationStarting
       ? noMicrophoneConnectedMessage
       : null
   )
   const startDisabled = $derived(microphoneUnavailable)
-  const conversationStartDisabled = $derived(microphoneUnavailable || !conversationLanguagesValid)
+  const conversationStartDisabled = $derived(
+    microphoneUnavailable || !conversationLanguagesValid
+  )
   const settingsWarning = $derived(error ? null : microphoneWarning)
   const conversationWarning = $derived(conversationWarningLabel())
 
@@ -175,7 +198,10 @@
     if (nextMode === 'conversation' && (running || starting)) {
       stopSession()
     }
-    if (nextMode === 'listening' && (conversationRunning || conversationStarting)) {
+    if (
+      nextMode === 'listening' &&
+      (conversationRunning || conversationStarting)
+    ) {
       stopConversation()
     }
 
@@ -239,7 +265,10 @@
         return
       }
 
-      error = cause instanceof Error ? cause.message : 'Could not start live translation.'
+      error =
+        cause instanceof Error
+          ? cause.message
+          : 'Could not start live translation.'
     }
   }
 
@@ -301,7 +330,8 @@
         return
       }
 
-      conversationError = cause instanceof Error ? cause.message : 'Could not start conversation.'
+      conversationError =
+        cause instanceof Error ? cause.message : 'Could not start conversation.'
     }
   }
 
@@ -464,7 +494,11 @@
   }
 
   async function playTranslatedAudio() {
-    if (!translatedAudioElement || !translatedAudioStream || translatedVoiceMuted) {
+    if (
+      !translatedAudioElement ||
+      !translatedAudioStream ||
+      translatedVoiceMuted
+    ) {
       return
     }
 
@@ -514,7 +548,10 @@
   }
 
   function getConversationLanguages(): ConversationLanguagePair {
-    return [conversationSourceLanguage, conversationTargetLanguage] as ConversationLanguagePair
+    return [
+      conversationSourceLanguage,
+      conversationTargetLanguage
+    ] as ConversationLanguagePair
   }
 
   function scopeConversationEvent(
@@ -542,7 +579,9 @@
   }
 
   function translatedVoiceLabel() {
-    return translatedVoiceMuted ? 'Unmute translated voice' : 'Mute translated voice'
+    return translatedVoiceMuted
+      ? 'Unmute translated voice'
+      : 'Mute translated voice'
   }
 
   function sessionLimitLabel() {
@@ -627,7 +666,9 @@
   }
 </script>
 
-<section class="grid gap-4 pb-[calc(env(safe-area-inset-bottom)+7rem)] sm:gap-6 lg:pb-0">
+<section
+  class="grid gap-4 pb-[calc(env(safe-area-inset-bottom)+7rem)] sm:gap-6 lg:pb-0"
+>
   <TranslateHeader
     selectedLanguageLabel={headerLanguageLabel}
     statusLabel={currentHeaderStatusLabel}

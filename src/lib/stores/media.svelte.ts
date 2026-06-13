@@ -11,7 +11,10 @@ function resolveSelectedDevice(
   selectedDeviceId: string,
   devices: MediaDeviceOption[]
 ) {
-  if (selectedDeviceId && devices.some((device) => device.deviceId === selectedDeviceId)) {
+  if (
+    selectedDeviceId &&
+    devices.some((device) => device.deviceId === selectedDeviceId)
+  ) {
     return selectedDeviceId
   }
 
@@ -130,9 +133,18 @@ export const media = {
     state.audioInputs = audioInputs
     state.audioOutputs = audioOutputs
     state.videoInputs = videoInputs
-    state.selectedAudioInput = resolveSelectedDevice(state.selectedAudioInput, audioInputs)
-    state.selectedAudioOutput = resolveSelectedDevice(state.selectedAudioOutput, audioOutputs)
-    state.selectedVideoInput = resolveSelectedDevice(state.selectedVideoInput, videoInputs)
+    state.selectedAudioInput = resolveSelectedDevice(
+      state.selectedAudioInput,
+      audioInputs
+    )
+    state.selectedAudioOutput = resolveSelectedDevice(
+      state.selectedAudioOutput,
+      audioOutputs
+    )
+    state.selectedVideoInput = resolveSelectedDevice(
+      state.selectedVideoInput,
+      videoInputs
+    )
   },
   setSelectedAudioInput(deviceId: string) {
     state.selectedAudioInput = deviceId

@@ -64,7 +64,9 @@ function buildUserMediaConstraints(): MediaStreamConstraints {
 }
 
 export async function acquireUserMedia(): Promise<MediaStream> {
-  const stream = await navigator.mediaDevices.getUserMedia(buildUserMediaConstraints())
+  const stream = await navigator.mediaDevices.getUserMedia(
+    buildUserMediaConstraints()
+  )
 
   for (const track of stream.getAudioTracks()) {
     track.enabled = media.isMicOn
@@ -89,7 +91,9 @@ export async function replaceLocalTracks(stream: MediaStream) {
   for (const [, pc] of peerConnections) {
     for (const kind of ['audio', 'video'] as const) {
       const nextTrack = getTrackByKind(stream, kind)
-      const sender = pc.getSenders().find((candidate) => candidate.track?.kind === kind)
+      const sender = pc
+        .getSenders()
+        .find((candidate) => candidate.track?.kind === kind)
 
       if (sender) {
         await sender.replaceTrack(nextTrack)

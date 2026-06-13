@@ -40,7 +40,10 @@ describe('translation session timing', () => {
   })
 
   it('reaches the hard cutoff before the remote session limit', () => {
-    const timing = getTranslationSessionTiming(0, translationSessionHardCutoffMs)
+    const timing = getTranslationSessionTiming(
+      0,
+      translationSessionHardCutoffMs
+    )
 
     expect(timing.shouldRenew).toBe(true)
     expect(timing.hardCutoffReached).toBe(true)

@@ -22,7 +22,9 @@ vi.mock('$lib/auth/session-store', () => ({
   getCurrentSession: vi.fn(() => null),
   hasSupabaseConfig: true,
   isGuestSession: vi.fn(() => false),
-  isGuestUser: vi.fn((user: { id?: string } | null | undefined) => user?.id === 'guest-user'),
+  isGuestUser: vi.fn(
+    (user: { id?: string } | null | undefined) => user?.id === 'guest-user'
+  ),
   loadStoredSession: vi.fn(() => null),
   normalizeSessionPayload: (value: unknown) => {
     if (!value || typeof value !== 'object') {
@@ -42,12 +44,15 @@ vi.mock('$lib/auth/session-store', () => ({
       access_token: payload.access_token,
       refresh_token: payload.refresh_token,
       expires_in: payload.expires_in,
-      token_type: typeof payload.token_type === 'string' ? payload.token_type : 'bearer',
+      token_type:
+        typeof payload.token_type === 'string' ? payload.token_type : 'bearer',
       user: payload.user
     }
   },
   normalizeUser: (value: unknown) =>
-    value && typeof value === 'object' ? (value as Record<string, unknown>) : null,
+    value && typeof value === 'object'
+      ? (value as Record<string, unknown>)
+      : null,
   redirectHomeIfInCallFlow: vi.fn(() => false),
   setCurrentSession: mocks.setCurrentSession,
   setLastSessionError: mocks.setLastSessionError,
@@ -69,7 +74,11 @@ describe('signUpWithEmail', () => {
       email: 'jane@example.com'
     })
 
-    const result = await signUpWithEmail('jane@example.com', 'password123', 'Jane')
+    const result = await signUpWithEmail(
+      'jane@example.com',
+      'password123',
+      'Jane'
+    )
 
     expect(result.error).toBeNull()
     expect(result.data?.session).toBeNull()
@@ -88,7 +97,11 @@ describe('signUpWithEmail', () => {
     }
     mocks.signUp.mockResolvedValue(session)
 
-    const result = await signUpWithEmail('jane@example.com', 'password123', 'Jane')
+    const result = await signUpWithEmail(
+      'jane@example.com',
+      'password123',
+      'Jane'
+    )
 
     expect(result.error).toBeNull()
     expect(result.data?.session?.access_token).toBe('access-token')
@@ -97,12 +110,19 @@ describe('signUpWithEmail', () => {
 
   it('returns a clear message for signup email rate limits', async () => {
     mocks.signUp.mockRejectedValue(
-      Object.assign(new Error('Request failed: 429 Email rate limit exceeded'), {
-        statusCode: 429
-      })
+      Object.assign(
+        new Error('Request failed: 429 Email rate limit exceeded'),
+        {
+          statusCode: 429
+        }
+      )
     )
 
-    const result = await signUpWithEmail('jane@example.com', 'password123', 'Jane')
+    const result = await signUpWithEmail(
+      'jane@example.com',
+      'password123',
+      'Jane'
+    )
 
     expect(result.data).toBeNull()
     expect(result.error?.message).toBe(

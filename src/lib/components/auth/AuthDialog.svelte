@@ -1,7 +1,11 @@
 <script lang="ts">
   import Modal from '$lib/components/shared/Modal.svelte'
   import PlatformIcons from '$lib/components/shared/PlatformIcons.svelte'
-  import { signInWithEmail, signInWithOAuth, signUpWithEmail } from '$lib/auth/session-service'
+  import {
+    signInWithEmail,
+    signInWithOAuth,
+    signUpWithEmail
+  } from '$lib/auth/session-service'
   import type { AuthConfig } from '$lib/server/auth-config'
 
   type AuthMode = 'sign-in' | 'sign-up'
@@ -22,7 +26,8 @@
   let emailInput = $state<HTMLInputElement | null>(null)
   let passwordInput = $state<HTMLInputElement | null>(null)
 
-  const emailSignUpDisabledMessage = 'Create account via email is currently disabled.'
+  const emailSignUpDisabledMessage =
+    'Create account via email is currently disabled.'
 
   const selectSignUpMode = () => {
     if (!authConfig.emailSignUpEnabled) {
@@ -139,9 +144,13 @@
   }
 
   const showEmail = $derived(authConfig.providers.email)
-  const isEmailSignUpDisabled = $derived(showEmail && !authConfig.emailSignUpEnabled)
+  const isEmailSignUpDisabled = $derived(
+    showEmail && !authConfig.emailSignUpEnabled
+  )
   const showSso = $derived(
-    authConfig.providers.github || authConfig.providers.google || authConfig.providers.apple
+    authConfig.providers.github ||
+      authConfig.providers.google ||
+      authConfig.providers.apple
   )
 </script>
 
@@ -199,7 +208,9 @@
       {/if}
 
       {#if showEmail}
-        <div class="inline-flex w-fit rounded-full border border-border bg-secondary p-1">
+        <div
+          class="inline-flex w-fit rounded-full border border-border bg-secondary p-1"
+        >
           <button
             type="button"
             class={`rounded-full px-4 py-2 text-sm font-semibold transition ${mode === 'sign-in' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}
@@ -213,7 +224,9 @@
               type="button"
               class={`rounded-full px-4 py-2 text-sm font-semibold transition ${mode === 'sign-up' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'} ${isEmailSignUpDisabled ? 'cursor-not-allowed opacity-50' : ''}`}
               aria-disabled={isEmailSignUpDisabled}
-              aria-describedby={isEmailSignUpDisabled ? 'email-signup-disabled-tooltip' : undefined}
+              aria-describedby={isEmailSignUpDisabled
+                ? 'email-signup-disabled-tooltip'
+                : undefined}
               aria-pressed={mode === 'sign-up'}
               onclick={selectSignUpMode}
             >
@@ -243,7 +256,9 @@
                 name="name"
                 autocomplete="name"
                 aria-invalid={error === 'Enter your name.'}
-                aria-describedby={error === 'Enter your name.' ? 'auth-feedback' : undefined}
+                aria-describedby={error === 'Enter your name.'
+                  ? 'auth-feedback'
+                  : undefined}
               />
             </label>
           {/if}
@@ -261,7 +276,9 @@
               spellcheck="false"
               type="email"
               aria-invalid={error === 'Enter your email address.'}
-              aria-describedby={error === 'Enter your email address.' ? 'auth-feedback' : undefined}
+              aria-describedby={error === 'Enter your email address.'
+                ? 'auth-feedback'
+                : undefined}
             />
           </label>
 
@@ -273,10 +290,14 @@
               class="rounded-2xl border border-input bg-card px-4 py-3 focus:border-primary"
               placeholder="At least 8 characters…"
               name="password"
-              autocomplete={mode === 'sign-in' ? 'current-password' : 'new-password'}
+              autocomplete={mode === 'sign-in'
+                ? 'current-password'
+                : 'new-password'}
               type="password"
               aria-invalid={error === 'Enter your password.'}
-              aria-describedby={error === 'Enter your password.' ? 'auth-feedback' : undefined}
+              aria-describedby={error === 'Enter your password.'
+                ? 'auth-feedback'
+                : undefined}
             />
           </label>
 
@@ -288,7 +309,10 @@
             <span>{mode === 'sign-in' ? 'Sign In' : 'Create Account'}</span>
             {#if isSubmitting}
               <span aria-hidden="true">…</span>
-              <span class="sr-only">{mode === 'sign-in' ? 'Signing in…' : 'Creating account…'}</span
+              <span class="sr-only"
+                >{mode === 'sign-in'
+                  ? 'Signing in…'
+                  : 'Creating account…'}</span
               >
             {/if}
           </button>
@@ -296,15 +320,28 @@
       {/if}
 
       {#if error}
-        <p id="auth-feedback" class="text-sm text-destructive" role="alert" aria-live="assertive">
+        <p
+          id="auth-feedback"
+          class="text-sm text-destructive"
+          role="alert"
+          aria-live="assertive"
+        >
           {error}
         </p>
       {/if}
       {#if message}
-        <p class="text-sm text-muted-foreground" role="status" aria-live="polite">{message}</p>
+        <p
+          class="text-sm text-muted-foreground"
+          role="status"
+          aria-live="polite"
+        >
+          {message}
+        </p>
       {/if}
       {#if !showEmail && !showSso}
-        <p class="text-sm text-muted-foreground">No interactive sign-in providers are enabled.</p>
+        <p class="text-sm text-muted-foreground">
+          No interactive sign-in providers are enabled.
+        </p>
       {/if}
     </div>
   {/if}

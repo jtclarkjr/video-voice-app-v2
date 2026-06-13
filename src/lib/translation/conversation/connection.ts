@@ -17,7 +17,9 @@ import type {
 
 type CreateTranslationConversationConnectionOptions = {
   connectingStatus: TranslationConversationStatus
-  isCurrentConnection: (connection: TranslationConversationConnection) => boolean
+  isCurrentConnection: (
+    connection: TranslationConversationConnection
+  ) => boolean
   isStopped: () => boolean
   languages: ConversationLanguagePair
   onError?: (message: string) => void

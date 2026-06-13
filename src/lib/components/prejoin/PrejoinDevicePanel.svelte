@@ -12,7 +12,9 @@
 <div class="grid gap-4">
   {#if media.audioInputs.length > 0}
     <label class="grid gap-2">
-      <span class="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+      <span
+        class="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground"
+      >
         Microphone
       </span>
       <select
@@ -20,7 +22,9 @@
         name="microphone"
         value={media.selectedAudioInput}
         onchange={(event) =>
-          media.setSelectedAudioInput((event.currentTarget as HTMLSelectElement).value)}
+          media.setSelectedAudioInput(
+            (event.currentTarget as HTMLSelectElement).value
+          )}
       >
         {#each media.audioInputs as device}
           <option value={device.deviceId}>{device.label}</option>
@@ -31,7 +35,9 @@
 
   {#if media.audioOutputs.length > 0}
     <label class="grid gap-2">
-      <span class="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+      <span
+        class="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground"
+      >
         Speaker
       </span>
       <select
@@ -39,7 +45,9 @@
         name="speaker"
         value={media.selectedAudioOutput}
         onchange={(event) =>
-          media.setSelectedAudioOutput((event.currentTarget as HTMLSelectElement).value)}
+          media.setSelectedAudioOutput(
+            (event.currentTarget as HTMLSelectElement).value
+          )}
       >
         {#each media.audioOutputs as device}
           <option value={device.deviceId}>{device.label}</option>
@@ -50,7 +58,9 @@
 
   {#if media.videoInputs.length > 0}
     <label class="grid gap-2">
-      <span class="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+      <span
+        class="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground"
+      >
         Camera
       </span>
       <select
@@ -58,7 +68,9 @@
         name="camera"
         value={media.selectedVideoInput}
         onchange={(event) =>
-          media.setSelectedVideoInput((event.currentTarget as HTMLSelectElement).value)}
+          media.setSelectedVideoInput(
+            (event.currentTarget as HTMLSelectElement).value
+          )}
       >
         {#each media.videoInputs as device}
           <option value={device.deviceId}>{device.label}</option>

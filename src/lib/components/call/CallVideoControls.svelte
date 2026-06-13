@@ -15,8 +15,9 @@
 
   function currentCameraLabel() {
     return (
-      media.videoInputs.find((device) => device.deviceId === media.selectedVideoInput)?.label ??
-      'Default'
+      media.videoInputs.find(
+        (device) => device.deviceId === media.selectedVideoInput
+      )?.label ?? 'Default'
     )
   }
 </script>
@@ -69,7 +70,9 @@
       >
         <div class="grid gap-0">
           <span class="text-sm font-semibold text-foreground">Camera</span>
-          <span class="text-xs text-muted-foreground">{currentCameraLabel()}</span>
+          <span class="text-xs text-muted-foreground"
+            >{currentCameraLabel()}</span
+          >
         </div>
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -117,7 +120,8 @@
         class="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left transition-colors hover:bg-accent"
         onclick={openSettings}
       >
-        <span class="text-sm font-semibold text-foreground">Preview Camera</span>
+        <span class="text-sm font-semibold text-foreground">Preview Camera</span
+        >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
@@ -141,7 +145,8 @@
         class="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left transition-colors hover:bg-accent"
         onclick={openSettings}
       >
-        <span class="text-sm font-semibold text-foreground">Video Settings</span>
+        <span class="text-sm font-semibold text-foreground">Video Settings</span
+        >
         <Settings class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
       </button>
     </div>

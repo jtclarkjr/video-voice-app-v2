@@ -23,7 +23,8 @@
       ? 'bg-accent text-destructive'
       : 'text-muted-foreground hover:bg-accent hover:text-foreground'
   }`}
-  onclick={() => void (screenShare.localActive ? stopScreenShare() : startScreenShare())}
+  onclick={() =>
+    void (screenShare.localActive ? stopScreenShare() : startScreenShare())}
   aria-label={screenShare.localActive ? 'Stop sharing' : 'Share screen'}
   aria-pressed={screenShare.localActive}
 >
@@ -43,7 +44,9 @@
         : 'text-muted-foreground hover:bg-accent hover:text-foreground'
     }`}
     onclick={() => layout.toggleChat()}
-    aria-label={chat.unreadCount > 0 ? `Toggle chat, ${chat.unreadCount} unread` : 'Toggle chat'}
+    aria-label={chat.unreadCount > 0
+      ? `Toggle chat, ${chat.unreadCount} unread`
+      : 'Toggle chat'}
     aria-pressed={layout.chatOpen}
     aria-expanded={layout.chatOpen}
   >

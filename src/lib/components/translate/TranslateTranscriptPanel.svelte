@@ -58,7 +58,10 @@
   })
 
   function isNearBottom(element: HTMLDivElement) {
-    return element.scrollHeight - element.scrollTop - element.clientHeight <= autoScrollThreshold
+    return (
+      element.scrollHeight - element.scrollTop - element.clientHeight <=
+      autoScrollThreshold
+    )
   }
 
   function handleTranscriptScroll() {
@@ -100,7 +103,9 @@
           aria-hidden="true"
         />
       </div>
-      <h2 class="m-0 hidden truncate text-lg font-semibold text-foreground sm:block">
+      <h2
+        class="m-0 hidden truncate text-lg font-semibold text-foreground sm:block"
+      >
         {selectedLanguageLabel}
       </h2>
     </div>
@@ -153,7 +158,9 @@
         {transcript}
       </p>
     {:else}
-      <div class="flex min-h-[12rem] items-center justify-center text-center sm:min-h-[20rem]">
+      <div
+        class="flex min-h-[12rem] items-center justify-center text-center sm:min-h-[20rem]"
+      >
         <p class="m-0 text-base text-muted-foreground">
           {running || starting ? 'Listening…' : 'Ready'}
         </p>

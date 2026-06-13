@@ -70,9 +70,9 @@ vp build         # build for production
 vp preview       # preview the production build
 ```
 
-For Svelte file checks and formatting, use the project's Svelte-specific commands:
+For Svelte diagnostics and formatting:
 
 ```sh
 vp dlx sv check
-vp run fmt:sv
+vp fmt . --write
 ```

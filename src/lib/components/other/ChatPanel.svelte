@@ -78,7 +78,9 @@
   aria-modal={variant === 'sheet' ? 'true' : undefined}
   aria-labelledby={titleId}
 >
-  <div class="flex shrink-0 items-center justify-between gap-3 border-b border-border px-4 py-3">
+  <div
+    class="flex shrink-0 items-center justify-between gap-3 border-b border-border px-4 py-3"
+  >
     <h3 id={titleId} class="text-sm font-semibold text-foreground">Chat</h3>
     {#if variant === 'sheet'}
       <button
@@ -101,17 +103,23 @@
     aria-relevant="additions text"
   >
     {#if chat.messages.length === 0}
-      <p class="text-center text-xs text-muted-foreground" role="status">No messages yet</p>
+      <p class="text-center text-xs text-muted-foreground" role="status">
+        No messages yet
+      </p>
     {:else}
       <div class="grid gap-3">
         {#each chat.messages as message (message.id)}
           <div
-            class={message.fromId === connection.userId ? 'text-right' : 'text-left'}
+            class={message.fromId === connection.userId
+              ? 'text-right'
+              : 'text-left'}
             role="article"
             aria-label={`Message from ${message.fromId === connection.userId ? 'You' : message.displayName}`}
           >
             <div class="text-xs text-muted-foreground">
-              {message.fromId === connection.userId ? 'You' : message.displayName} ·
+              {message.fromId === connection.userId
+                ? 'You'
+                : message.displayName} ·
               <time datetime={new Date(message.timestamp).toISOString()}>
                 {new Date(message.timestamp).toLocaleTimeString([], {
                   hour: '2-digit',
@@ -152,7 +160,12 @@
       </button>
     </div>
     {#if sendError}
-      <p id={errorId} class="mt-2 text-xs text-destructive" role="alert" aria-live="assertive">
+      <p
+        id={errorId}
+        class="mt-2 text-xs text-destructive"
+        role="alert"
+        aria-live="assertive"
+      >
         {sendError}
       </p>
     {/if}

@@ -8,13 +8,17 @@ import {
 describe('microphone availability', () => {
   it('detects an available audio input', async () => {
     await expect(
-      getMicrophoneAvailability(createMediaDevices([createDevice('audioinput')]))
+      getMicrophoneAvailability(
+        createMediaDevices([createDevice('audioinput')])
+      )
     ).resolves.toBe('available')
   })
 
   it('detects when no audio input is connected', async () => {
     await expect(
-      getMicrophoneAvailability(createMediaDevices([createDevice('videoinput')]))
+      getMicrophoneAvailability(
+        createMediaDevices([createDevice('videoinput')])
+      )
     ).resolves.toBe('unavailable')
   })
 

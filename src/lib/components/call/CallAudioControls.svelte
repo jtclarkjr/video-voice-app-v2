@@ -16,15 +16,17 @@
 
   function currentInputLabel() {
     return (
-      media.audioInputs.find((device) => device.deviceId === media.selectedAudioInput)?.label ??
-      'Default'
+      media.audioInputs.find(
+        (device) => device.deviceId === media.selectedAudioInput
+      )?.label ?? 'Default'
     )
   }
 
   function currentOutputLabel() {
     return (
-      media.audioOutputs.find((device) => device.deviceId === media.selectedAudioOutput)?.label ??
-      'Default'
+      media.audioOutputs.find(
+        (device) => device.deviceId === media.selectedAudioOutput
+      )?.label ?? 'Default'
     )
   }
 </script>
@@ -76,8 +78,11 @@
         aria-expanded={showInputDevices}
       >
         <div class="grid gap-0">
-          <span class="text-sm font-semibold text-foreground">Input Device</span>
-          <span class="text-xs text-muted-foreground">{currentInputLabel()}</span>
+          <span class="text-sm font-semibold text-foreground">Input Device</span
+          >
+          <span class="text-xs text-muted-foreground"
+            >{currentInputLabel()}</span
+          >
         </div>
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -125,8 +130,12 @@
         aria-expanded={showOutputDevices}
       >
         <div class="grid gap-0">
-          <span class="text-sm font-semibold text-foreground">Output Device</span>
-          <span class="text-xs text-muted-foreground">{currentOutputLabel()}</span>
+          <span class="text-sm font-semibold text-foreground"
+            >Output Device</span
+          >
+          <span class="text-xs text-muted-foreground"
+            >{currentOutputLabel()}</span
+          >
         </div>
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -177,7 +186,9 @@
           max="200"
           value={media.inputVolume}
           oninput={(event) =>
-            media.setInputVolume(Number((event.currentTarget as HTMLInputElement).value))}
+            media.setInputVolume(
+              Number((event.currentTarget as HTMLInputElement).value)
+            )}
           class="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-muted accent-primary"
           aria-label="Input volume"
         />
@@ -191,7 +202,9 @@
           max="200"
           value={media.outputVolume}
           oninput={(event) =>
-            media.setOutputVolume(Number((event.currentTarget as HTMLInputElement).value))}
+            media.setOutputVolume(
+              Number((event.currentTarget as HTMLInputElement).value)
+            )}
           class="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-muted accent-primary"
           aria-label="Output volume"
         />
@@ -226,7 +239,8 @@
         class="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left transition-colors hover:bg-accent"
         onclick={openSettings}
       >
-        <span class="text-sm font-semibold text-foreground">Voice Settings</span>
+        <span class="text-sm font-semibold text-foreground">Voice Settings</span
+        >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"

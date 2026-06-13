@@ -89,7 +89,9 @@
       </div>
 
       <div class="hidden gap-2 sm:grid">
-        <p class="m-0 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+        <p
+          class="m-0 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground"
+        >
           Source
         </p>
         <div
@@ -116,7 +118,9 @@
           class="hidden min-h-11 items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50 lg:col-span-2 lg:inline-flex"
           disabled={sessionPending || starting || startDisabled}
           onclick={() => void onStart()}
-          aria-label={starting ? 'Starting live translation' : 'Start live translation'}
+          aria-label={starting
+            ? 'Starting live translation'
+            : 'Start live translation'}
         >
           <Play class="size-4" aria-hidden="true" />
           {starting ? 'Starting' : 'Start'}
@@ -169,7 +173,9 @@
         class="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
         disabled={!transcript.trim()}
         onclick={() => void onCopyTranscript()}
-        aria-label={copied ? 'Copied translation transcript' : 'Copy translation transcript'}
+        aria-label={copied
+          ? 'Copied translation transcript'
+          : 'Copy translation transcript'}
       >
         <Copy class="size-4" aria-hidden="true" />
         {copied ? 'Copied' : 'Copy'}

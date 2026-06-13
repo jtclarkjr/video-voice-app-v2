@@ -20,7 +20,9 @@
     onPin?: (id: string) => void
   }>()
 
-  const remoteParticipants = $derived(Object.values(participants) as Participant[])
+  const remoteParticipants = $derived(
+    Object.values(participants) as Participant[]
+  )
   const total = $derived(remoteParticipants.length + 1)
   const cols = $derived.by(() => {
     if (total <= 1) {

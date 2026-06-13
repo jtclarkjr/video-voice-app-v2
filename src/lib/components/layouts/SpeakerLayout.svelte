@@ -24,8 +24,12 @@
     onPin?: (id: string) => void
   }>()
 
-  const remoteParticipants = $derived(Object.values(participants) as Participant[])
-  const mainId = $derived(pinnedId ?? activeSpeakerId ?? remoteParticipants[0]?.id ?? null)
+  const remoteParticipants = $derived(
+    Object.values(participants) as Participant[]
+  )
+  const mainId = $derived(
+    pinnedId ?? activeSpeakerId ?? remoteParticipants[0]?.id ?? null
+  )
   const mainParticipant = $derived(mainId ? participants[mainId] : null)
   const showScreenShare = $derived(!!screenShareStream)
   const stripParticipants = $derived(
@@ -38,7 +42,9 @@
 <div class="grid min-w-0 gap-3 overflow-hidden">
   <div data-primary-call-frame>
     <VideoTile
-      stream={showScreenShare ? screenShareStream : (mainParticipant?.stream ?? null)}
+      stream={showScreenShare
+        ? screenShareStream
+        : (mainParticipant?.stream ?? null)}
       label={showScreenShare
         ? `${mainParticipant?.displayName ?? 'Screen'} screen`
         : (mainParticipant?.displayName ?? 'Waiting')}
@@ -49,7 +55,9 @@
     />
   </div>
 
-  <div class="flex min-w-0 max-w-full gap-3 overflow-x-auto overscroll-x-contain pb-1">
+  <div
+    class="flex min-w-0 max-w-full gap-3 overflow-x-auto overscroll-x-contain pb-1"
+  >
     <VideoTile
       stream={localStream}
       label={localDisplayName}

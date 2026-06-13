@@ -57,12 +57,17 @@
   {/if}
 
   <div class="rounded-2xl border border-border/70 bg-card/60 px-4 py-3">
-    <p class="m-0 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+    <p
+      class="m-0 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground"
+    >
       Joining as
     </p>
     {#if isAnonymous}
       <div class="mt-3 grid gap-2">
-        <label for="anonymous-display-name" class="text-sm font-medium text-foreground">
+        <label
+          for="anonymous-display-name"
+          class="text-sm font-medium text-foreground"
+        >
           Display name
         </label>
         <input
@@ -75,12 +80,17 @@
           class="w-full rounded-md border border-border bg-background px-3 py-2 focus:border-primary"
           aria-describedby="anonymous-display-name-help"
         />
-        <p id="anonymous-display-name-help" class="m-0 text-sm text-muted-foreground">
+        <p
+          id="anonymous-display-name-help"
+          class="m-0 text-sm text-muted-foreground"
+        >
           Add a display name to join the call.
         </p>
       </div>
     {:else}
-      <p class="mt-1 text-base font-medium text-foreground">{resolvedDisplayName}</p>
+      <p class="mt-1 text-base font-medium text-foreground">
+        {resolvedDisplayName}
+      </p>
     {/if}
 
     {#if sessionError}

@@ -4,14 +4,18 @@
   import PrejoinDevicePanel from '$lib/components/prejoin/PrejoinDevicePanel.svelte'
   import PrejoinJoinPanel from '$lib/components/prejoin/PrejoinJoinPanel.svelte'
   import PrejoinPreviewCard from '$lib/components/prejoin/PrejoinPreviewCard.svelte'
-  import { getUserDisplayName, hasAuthenticatedSession } from '$lib/auth/session-service'
+  import {
+    getUserDisplayName,
+    hasAuthenticatedSession
+  } from '$lib/auth/session-service'
   import { fetchActiveRooms } from '$lib/rooms/client'
   import type { AuthConfig } from '$lib/server/auth-config'
   import { session } from '$lib/stores/session.svelte'
   import { media } from '$lib/stores/media.svelte'
   import { bestEffort } from '$lib/utils'
 
-  const ACCESS_ERROR_MESSAGE = 'Could not access camera/microphone. Please check permissions.'
+  const ACCESS_ERROR_MESSAGE =
+    'Could not access camera/microphone. Please check permissions.'
 
   let {
     authConfig,
@@ -32,7 +36,9 @@
   let previewStream = $state<MediaStream | null>(null)
   let permissionError = $state<string | null>(null)
   let needsGesture = $state(false)
-  let roomState = $state<RoomState>(untrack(() => isCreateFlow) ? 'missing' : 'loading')
+  let roomState = $state<RoomState>(
+    untrack(() => isCreateFlow) ? 'missing' : 'loading'
+  )
   let authDialogOpen = $state(false)
   let isMounted = false
   let previewRequestToken = 0
@@ -40,7 +46,9 @@
   const isAnonymous = $derived(session.isAnonymous)
   const resolvedDisplayName = $derived.by(() => {
     const fallback = getUserDisplayName(session.data?.user ?? null)
-    return session.isAnonymous ? anonymousDisplayName.trim() || fallback : fallback
+    return session.isAnonymous
+      ? anonymousDisplayName.trim() || fallback
+      : fallback
   })
 
   $effect(() => {
@@ -83,7 +91,9 @@
     }
 
     const tracks =
-      kind === 'audio' ? previewStream.getAudioTracks() : previewStream.getVideoTracks()
+      kind === 'audio'
+        ? previewStream.getAudioTracks()
+        : previewStream.getVideoTracks()
 
     return tracks.some((track) => track.readyState === 'live')
   }
@@ -100,7 +110,10 @@
     const requestToken = ++previewRequestToken
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: true
+      })
       if (!isMounted || requestToken !== previewRequestToken) {
         for (const track of stream.getTracks()) {
           track.stop()
@@ -151,7 +164,9 @@
         try {
           const rooms = await fetchActiveRooms()
           if (isMounted) {
-            roomState = rooms.some((room) => room.id === roomId) ? 'exists' : 'missing'
+            roomState = rooms.some((room) => room.id === roomId)
+              ? 'exists'
+              : 'missing'
           }
         } catch {
           if (isMounted) {
@@ -164,7 +179,10 @@
     return () => {
       isMounted = false
       previewRequestToken += 1
-      navigator.mediaDevices.removeEventListener('devicechange', handleDeviceChange)
+      navigator.mediaDevices.removeEventListener(
+        'devicechange',
+        handleDeviceChange
+      )
       stopPreview()
     }
   })
@@ -181,7 +199,10 @@
   }
 
   function generateRoomId() {
-    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    if (
+      typeof crypto !== 'undefined' &&
+      typeof crypto.randomUUID === 'function'
+    ) {
       return crypto.randomUUID()
     }
 
@@ -197,7 +218,9 @@
       return
     }
 
-    const nextRoomId = isCreateFlow ? pendingRoomName.trim() || generateRoomId() : roomId
+    const nextRoomId = isCreateFlow
+      ? pendingRoomName.trim() || generateRoomId()
+      : roomId
     if (!nextRoomId) {
       return
     }
@@ -216,7 +239,9 @@
     onJoin(resolvedDisplayName, nextRoomId)
   }
 
-  const roomMissingForAnonymous = $derived((roomState === 'missing' || isCreateFlow) && isAnonymous)
+  const roomMissingForAnonymous = $derived(
+    (roomState === 'missing' || isCreateFlow) && isAnonymous
+  )
   const isJoinDisabled = $derived(
     session.isPending ||
       (isAnonymous && anonymousDisplayName.trim() === '') ||
@@ -269,7 +294,9 @@
       role="alert"
     >
       <p class="text-sm text-destructive">{permissionError}</p>
-      <a href="/" class="mt-4 inline-block text-sm text-primary underline">Back to lobby</a>
+      <a href="/" class="mt-4 inline-block text-sm text-primary underline"
+        >Back to lobby</a
+      >
     </div>
   {:else}
     <PrejoinPreviewCard
@@ -296,7 +323,10 @@
       onJoin={handleJoin}
     />
 
-    <a href="/" class="text-center text-sm text-muted-foreground hover:text-foreground">
+    <a
+      href="/"
+      class="text-center text-sm text-muted-foreground hover:text-foreground"
+    >
       Back to lobby
     </a>
   {/if}

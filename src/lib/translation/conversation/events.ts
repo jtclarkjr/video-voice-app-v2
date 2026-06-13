@@ -197,7 +197,10 @@ function updateConversationTurn(
 
 function createEmptyConversationTurn(
   event:
-    | Extract<ConversationRealtimeEvent, { type: 'conversation.transcript.delta' }>
+    | Extract<
+        ConversationRealtimeEvent,
+        { type: 'conversation.transcript.delta' }
+      >
     | Extract<
         ConversationRealtimeEvent,
         { type: 'conversation.translation.delta' }

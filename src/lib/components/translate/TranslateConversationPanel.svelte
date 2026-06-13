@@ -1,7 +1,17 @@
 <script lang="ts">
-  import { ArrowLeftRight, Languages, MessageCircle, Mic, Square, Trash2 } from 'lucide-svelte'
+  import {
+    ArrowLeftRight,
+    Languages,
+    MessageCircle,
+    Mic,
+    Square,
+    Trash2
+  } from 'lucide-svelte'
   import { getTranslationLanguageLabel } from '$lib/translation/config/languages'
-  import type { ConversationTurn, TranslationLanguageCode } from '$lib/translation/types'
+  import type {
+    ConversationTurn,
+    TranslationLanguageCode
+  } from '$lib/translation/types'
 
   type TranslationLanguageOption = {
     code: TranslationLanguageCode
@@ -86,7 +96,9 @@
 
       <div class="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-2">
         <label class="grid gap-1.5">
-          <span class="text-xs font-semibold text-muted-foreground">Person 1</span>
+          <span class="text-xs font-semibold text-muted-foreground"
+            >Person 1</span
+          >
           <select
             bind:value={sourceLanguage}
             disabled={running || starting}
@@ -111,7 +123,9 @@
         </button>
 
         <label class="grid gap-1.5">
-          <span class="text-xs font-semibold text-muted-foreground">Person 2</span>
+          <span class="text-xs font-semibold text-muted-foreground"
+            >Person 2</span
+          >
           <select
             bind:value={targetLanguage}
             disabled={running || starting}
@@ -156,7 +170,9 @@
       {#if turns.length > 0}
         <div class="grid gap-3">
           {#each turns as turn (turn.id)}
-            <article class={`flex ${isSourceSpeaker(turn) ? 'justify-start' : 'justify-end'}`}>
+            <article
+              class={`flex ${isSourceSpeaker(turn) ? 'justify-start' : 'justify-end'}`}
+            >
               <div
                 class={`max-w-[min(34rem,88%)] rounded-2xl px-4 py-3 shadow-sm ${
                   isSourceSpeaker(turn)
@@ -168,7 +184,9 @@
                   {getTranslationLanguageLabel(turn.speakerLanguage)}
                 </p>
                 {#if turn.sourceText}
-                  <p class="m-0 mt-1 break-words whitespace-pre-wrap text-lg leading-7">
+                  <p
+                    class="m-0 mt-1 break-words whitespace-pre-wrap text-lg leading-7"
+                  >
                     {turn.sourceText}
                   </p>
                 {/if}
@@ -183,7 +201,9 @@
                     <p class="m-0 text-xs font-semibold opacity-75">
                       {getTranslationLanguageLabel(turn.targetLanguage)}
                     </p>
-                    <p class="m-0 mt-1 break-words whitespace-pre-wrap text-xl leading-8">
+                    <p
+                      class="m-0 mt-1 break-words whitespace-pre-wrap text-xl leading-8"
+                    >
                       {turn.translatedText}
                     </p>
                   </div>
@@ -195,7 +215,10 @@
       {:else}
         <div class="flex min-h-[20rem] items-center justify-center text-center">
           <div class="grid justify-items-center gap-3">
-            <MessageCircle class="size-8 text-muted-foreground" aria-hidden="true" />
+            <MessageCircle
+              class="size-8 text-muted-foreground"
+              aria-hidden="true"
+            />
             <p class="m-0 text-base text-muted-foreground">
               {running || starting ? 'Listening…' : 'Ready'}
             </p>
@@ -219,7 +242,10 @@
         <button
           type="button"
           class="inline-flex size-16 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-colors hover:bg-primary/90 disabled:opacity-50"
-          disabled={sessionPending || starting || startDisabled || !languagesValid}
+          disabled={sessionPending ||
+            starting ||
+            startDisabled ||
+            !languagesValid}
           onclick={() => void onStart()}
           aria-label={starting ? 'Starting conversation' : 'Start conversation'}
           title={starting ? 'Starting' : 'Start'}

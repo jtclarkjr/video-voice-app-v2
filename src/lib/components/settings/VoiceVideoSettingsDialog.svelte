@@ -61,7 +61,8 @@
       const width = micCanvas.width
       const height = micCanvas.height
       ctx.clearRect(0, 0, width, height)
-      const avg = data.reduce((sum, value) => sum + value, 0) / data.length / 255
+      const avg =
+        data.reduce((sum, value) => sum + value, 0) / data.length / 255
       const bars = 24
       const barWidth = (width - (bars - 1) * 4) / bars
 
@@ -86,7 +87,9 @@
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: media.selectedVideoInput ? { deviceId: { exact: media.selectedVideoInput } } : true
+        video: media.selectedVideoInput
+          ? { deviceId: { exact: media.selectedVideoInput } }
+          : true
       })
       previewStream = stream
     } catch {
@@ -107,7 +110,9 @@
     stopMicTest()
     try {
       micTestStream = await navigator.mediaDevices.getUserMedia({
-        audio: media.selectedAudioInput ? { deviceId: { exact: media.selectedAudioInput } } : true
+        audio: media.selectedAudioInput
+          ? { deviceId: { exact: media.selectedAudioInput } }
+          : true
       })
     } catch {
       micTestStream = null
@@ -128,7 +133,8 @@
   <div class="grid gap-6">
     <div class="grid gap-4 md:grid-cols-2">
       <label class="grid gap-2">
-        <span class="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground"
+        <span
+          class="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground"
           >Microphone</span
         >
         <select
@@ -136,7 +142,9 @@
           name="settings-microphone"
           value={media.selectedAudioInput}
           onchange={(event) =>
-            media.setSelectedAudioInput((event.currentTarget as HTMLSelectElement).value)}
+            media.setSelectedAudioInput(
+              (event.currentTarget as HTMLSelectElement).value
+            )}
         >
           {#each media.audioInputs.length > 0 ? media.audioInputs : [{ deviceId: '', label: 'Default' }] as device}
             <option value={device.deviceId}>{device.label}</option>
@@ -144,7 +152,8 @@
         </select>
       </label>
       <label class="grid gap-2">
-        <span class="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground"
+        <span
+          class="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground"
           >Speaker</span
         >
         <select
@@ -152,7 +161,9 @@
           name="settings-speaker"
           value={media.selectedAudioOutput}
           onchange={(event) =>
-            media.setSelectedAudioOutput((event.currentTarget as HTMLSelectElement).value)}
+            media.setSelectedAudioOutput(
+              (event.currentTarget as HTMLSelectElement).value
+            )}
         >
           {#each media.audioOutputs.length > 0 ? media.audioOutputs : [{ deviceId: '', label: 'Default' }] as device}
             <option value={device.deviceId}>{device.label}</option>
@@ -163,7 +174,8 @@
 
     <div class="grid gap-4 md:grid-cols-2">
       <label class="grid gap-2">
-        <span class="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground"
+        <span
+          class="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground"
           >Mic Volume</span
         >
         <input
@@ -172,12 +184,15 @@
           max="200"
           value={media.inputVolume}
           oninput={(event) =>
-            media.setInputVolume(Number((event.currentTarget as HTMLInputElement).value))}
+            media.setInputVolume(
+              Number((event.currentTarget as HTMLInputElement).value)
+            )}
           aria-label="Mic volume"
         />
       </label>
       <label class="grid gap-2">
-        <span class="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground"
+        <span
+          class="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground"
           >Speaker Volume</span
         >
         <input
@@ -186,7 +201,9 @@
           max="200"
           value={media.outputVolume}
           oninput={(event) =>
-            media.setOutputVolume(Number((event.currentTarget as HTMLInputElement).value))}
+            media.setOutputVolume(
+              Number((event.currentTarget as HTMLInputElement).value)
+            )}
           aria-label="Speaker volume"
         />
       </label>
@@ -220,7 +237,9 @@
             name="echo-cancellation"
             checked={media.echoCancellation}
             onchange={(event) =>
-              media.setEchoCancellation((event.currentTarget as HTMLInputElement).checked)}
+              media.setEchoCancellation(
+                (event.currentTarget as HTMLInputElement).checked
+              )}
           />
         </label>
         <label
@@ -232,12 +251,15 @@
             name="automatic-gain-control"
             checked={media.autoGainControl}
             onchange={(event) =>
-              media.setAutoGainControl((event.currentTarget as HTMLInputElement).checked)}
+              media.setAutoGainControl(
+                (event.currentTarget as HTMLInputElement).checked
+              )}
           />
         </label>
       </div>
       <label class="grid gap-2">
-        <span class="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground"
+        <span
+          class="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground"
           >Noise Suppression</span
         >
         <select
@@ -246,7 +268,8 @@
           value={media.noiseSuppression}
           onchange={(event) =>
             media.setNoiseSuppression(
-              (event.currentTarget as HTMLSelectElement).value as NoiseSuppression
+              (event.currentTarget as HTMLSelectElement)
+                .value as NoiseSuppression
             )}
         >
           <option value="high">High</option>
@@ -257,7 +280,9 @@
     </div>
 
     <div class="grid gap-4 md:grid-cols-[minmax(0,1fr)_14rem]">
-      <div class="relative aspect-video overflow-hidden rounded-[1.75rem] bg-secondary">
+      <div
+        class="relative aspect-video overflow-hidden rounded-[1.75rem] bg-secondary"
+      >
         <video
           bind:this={videoElement}
           autoplay
@@ -288,7 +313,8 @@
       </div>
 
       <label class="grid gap-2">
-        <span class="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground"
+        <span
+          class="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground"
           >Camera</span
         >
         <select
@@ -296,7 +322,9 @@
           name="settings-camera"
           value={media.selectedVideoInput}
           onchange={(event) =>
-            media.setSelectedVideoInput((event.currentTarget as HTMLSelectElement).value)}
+            media.setSelectedVideoInput(
+              (event.currentTarget as HTMLSelectElement).value
+            )}
         >
           {#each media.videoInputs.length > 0 ? media.videoInputs : [{ deviceId: '', label: 'Default' }] as device}
             <option value={device.deviceId}>{device.label}</option>

@@ -33,7 +33,9 @@ function createAudioTracker(stream: MediaStream): AudioTracker | null {
       context,
       source,
       analyser,
-      data: new Uint8Array(analyser.frequencyBinCount) as Uint8Array<ArrayBuffer>,
+      data: new Uint8Array(
+        analyser.frequencyBinCount
+      ) as Uint8Array<ArrayBuffer>,
       speakingFrames: 0,
       silenceFrames: 0,
       isSpeaking: false

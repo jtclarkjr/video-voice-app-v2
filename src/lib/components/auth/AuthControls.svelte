@@ -37,12 +37,19 @@
   }
 </script>
 
-<Popover bind:open={popoverOpen} id="account-popover" label="Account menu" align="end">
+<Popover
+  bind:open={popoverOpen}
+  id="account-popover"
+  label="Account menu"
+  align="end"
+>
   {#snippet trigger(popover)}
     <button
       type="button"
       class="flex size-11 items-center justify-center rounded-full border border-border/70 bg-card/80 shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground sm:size-10"
-      aria-label={session.isAnonymous ? 'Open account menu' : `${displayName()} account menu`}
+      aria-label={session.isAnonymous
+        ? 'Open account menu'
+        : `${displayName()} account menu`}
       aria-haspopup="dialog"
       aria-expanded={popover.expanded}
       aria-controls={popover.id}
@@ -94,7 +101,9 @@
       </div>
 
       <div class="grid gap-2">
-        <p class="m-0 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+        <p
+          class="m-0 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground"
+        >
           Theme
         </p>
         <div

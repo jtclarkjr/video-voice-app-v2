@@ -20,17 +20,18 @@ describe('translation conversation session API', () => {
   })
 
   it('creates a backend session with two languages and no output audio', async () => {
-    const fetchMock = vi.fn(async () =>
-      new Response(
-        JSON.stringify({
-          expiresAt: '2026-05-30T12:10:00Z',
-          id: 'conversation-123'
-        }),
-        {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' }
-        }
-      )
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            expiresAt: '2026-05-30T12:10:00Z',
+            id: 'conversation-123'
+          }),
+          {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' }
+          }
+        )
     )
     vi.stubGlobal('fetch', fetchMock)
 
@@ -61,11 +62,12 @@ describe('translation conversation session API', () => {
   })
 
   it('posts offer SDP to the backend conversation route', async () => {
-    const fetchMock = vi.fn(async () =>
-      new Response('answer-sdp', {
-        status: 200,
-        headers: { 'Content-Type': 'application/sdp' }
-      })
+    const fetchMock = vi.fn(
+      async () =>
+        new Response('answer-sdp', {
+          status: 200,
+          headers: { 'Content-Type': 'application/sdp' }
+        })
     )
     vi.stubGlobal('fetch', fetchMock)
 

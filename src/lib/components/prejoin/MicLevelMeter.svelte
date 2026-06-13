@@ -36,8 +36,10 @@
       const avg = data.reduce((a, b) => a + b, 0) / data.length / 255
 
       const styles = getComputedStyle(el)
-      const activeColor = styles.getPropertyValue('--color-success').trim() || '#2d936c'
-      const inactiveColor = styles.getPropertyValue('--color-muted').trim() || '#eaded2'
+      const activeColor =
+        styles.getPropertyValue('--color-success').trim() || '#2d936c'
+      const inactiveColor =
+        styles.getPropertyValue('--color-muted').trim() || '#eaded2'
 
       for (let i = 0; i < bars; i += 1) {
         const threshold = i / bars
@@ -59,7 +61,8 @@
 </script>
 
 <div class="grid gap-2">
-  <span class="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground"
+  <span
+    class="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground"
     >Microphone</span
   >
   <canvas

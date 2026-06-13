@@ -20,17 +20,18 @@ describe('translation session API', () => {
   })
 
   it('creates a backend session with the selected language and bearer token', async () => {
-    const fetchMock = vi.fn(async () =>
-      new Response(
-        JSON.stringify({
-          expiresAt: '2026-05-30T12:10:00Z',
-          id: 'session-123'
-        }),
-        {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' }
-        }
-      )
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            expiresAt: '2026-05-30T12:10:00Z',
+            id: 'session-123'
+          }),
+          {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' }
+          }
+        )
     )
     vi.stubGlobal('fetch', fetchMock)
 
@@ -56,11 +57,12 @@ describe('translation session API', () => {
   })
 
   it('posts offer SDP to the backend session route', async () => {
-    const fetchMock = vi.fn(async () =>
-      new Response('answer-sdp', {
-        status: 200,
-        headers: { 'Content-Type': 'application/sdp' }
-      })
+    const fetchMock = vi.fn(
+      async () =>
+        new Response('answer-sdp', {
+          status: 200,
+          headers: { 'Content-Type': 'application/sdp' }
+        })
     )
     vi.stubGlobal('fetch', fetchMock)
 

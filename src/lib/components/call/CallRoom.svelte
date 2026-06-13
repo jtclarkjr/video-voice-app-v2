@@ -9,7 +9,11 @@
   import ParticipantRoster from '$lib/components/other/ParticipantRoster.svelte'
   import { audioLevels } from '$lib/audio-levels.svelte'
   import { startQualityMonitor, stopQualityMonitor } from '$lib/quality-monitor'
-  import { connect, disconnect, sendMediaState } from '$lib/signaling/connection'
+  import {
+    connect,
+    disconnect,
+    sendMediaState
+  } from '$lib/signaling/connection'
   import { participants } from '$lib/stores/participants.svelte'
   import { chat } from '$lib/stores/chat.svelte'
   import { connection } from '$lib/stores/connection.svelte'
@@ -61,7 +65,10 @@
       return true
     }
 
-    return !streamHasLiveTrack(stream, 'audio') || !streamHasLiveTrack(stream, 'video')
+    return (
+      !streamHasLiveTrack(stream, 'audio') ||
+      !streamHasLiveTrack(stream, 'video')
+    )
   }
 
   onMount(() => {
@@ -89,7 +96,10 @@
         await replaceLocalTracks(stream)
         media.setLocalStream(stream)
       } catch (cause) {
-        logMediaError('Failed to recover local media after device change.', cause)
+        logMediaError(
+          'Failed to recover local media after device change.',
+          cause
+        )
       }
     }
 
@@ -104,7 +114,8 @@
         await media.enumerateDevices()
       } catch (cause) {
         logMediaError('Failed to acquire initial local media.', cause)
-        error = 'Could not access camera or microphone. Please check permissions.'
+        error =
+          'Could not access camera or microphone. Please check permissions.'
         return
       }
 
@@ -174,7 +185,10 @@
       destroyed = true
       isMounted = false
       reconnectAttemptToken += 1
-      navigator.mediaDevices.removeEventListener('devicechange', handleDeviceChange)
+      navigator.mediaDevices.removeEventListener(
+        'devicechange',
+        handleDeviceChange
+      )
       disconnect()
       closeAll()
       audioLevels.stop()
@@ -288,11 +302,16 @@
   <div class="grid min-w-0 gap-4 overflow-x-hidden">
     <ConnectionBanner />
 
-    <div class="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-      <h1 class="min-w-0 break-all text-lg font-semibold text-foreground">Room: {roomId}</h1>
+    <div
+      class="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <h1 class="min-w-0 break-all text-lg font-semibold text-foreground">
+        Room: {roomId}
+      </h1>
       <span class="shrink-0 text-sm text-muted-foreground">
-        {Object.keys(participants.byId).length + 1} participant{Object.keys(participants.byId)
-          .length === 0
+        {Object.keys(participants.byId).length + 1} participant{Object.keys(
+          participants.byId
+        ).length === 0
           ? ''
           : 's'}
       </span>

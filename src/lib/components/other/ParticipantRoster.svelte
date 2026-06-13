@@ -30,7 +30,9 @@
   aria-modal={variant === 'sheet' ? 'true' : undefined}
   aria-labelledby={titleId}
 >
-  <div class="flex shrink-0 items-center justify-between gap-3 border-b border-border px-4 py-3">
+  <div
+    class="flex shrink-0 items-center justify-between gap-3 border-b border-border px-4 py-3"
+  >
     <h3 id={titleId} class="text-sm font-semibold text-foreground">
       Participants ({remoteList.length + 1})
     </h3>
@@ -46,15 +48,24 @@
     {/if}
   </div>
 
-  <div class="min-h-0 flex-1 overflow-y-auto px-2 py-2" role="list" aria-label="Participants">
-    <div class="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-accent/50" role="listitem">
+  <div
+    class="min-h-0 flex-1 overflow-y-auto px-2 py-2"
+    role="list"
+    aria-label="Participants"
+  >
+    <div
+      class="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-accent/50"
+      role="listitem"
+    >
       <div
         class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground"
       >
         {localDisplayName.charAt(0).toUpperCase()}
       </div>
       <div class="min-w-0 flex-1">
-        <div class="truncate text-sm font-medium text-foreground">{localDisplayName}</div>
+        <div class="truncate text-sm font-medium text-foreground">
+          {localDisplayName}
+        </div>
       </div>
       <div class="flex items-center gap-1.5">
         <span class="sr-only">
@@ -110,7 +121,9 @@
             class="h-3.5 w-3.5 text-muted-foreground"
             aria-hidden="true"
           >
-            <path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5" />
+            <path
+              d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"
+            />
             <rect x="2" y="6" width="14" height="12" rx="2" />
           </svg>
         {:else}
@@ -125,7 +138,9 @@
             class="h-3.5 w-3.5 text-destructive"
             aria-hidden="true"
           >
-            <path d="M10.66 6H14a2 2 0 0 1 2 2v2.5l5.248-3.062A.5.5 0 0 1 22 7.87v8.196" />
+            <path
+              d="M10.66 6H14a2 2 0 0 1 2 2v2.5l5.248-3.062A.5.5 0 0 1 22 7.87v8.196"
+            />
             <path d="M16 16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2" />
             <line x1="2" x2="22" y1="2" y2="22" />
           </svg>
@@ -134,16 +149,23 @@
     </div>
 
     {#each remoteList as participant (participant.id)}
-      <div class="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-accent/50" role="listitem">
+      <div
+        class="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-accent/50"
+        role="listitem"
+      >
         <div
           class={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground ${participant.isSpeaking ? 'ring-2 ring-green-500' : ''}`}
         >
           {participant.displayName.charAt(0).toUpperCase()}
         </div>
         <div class="min-w-0 flex-1">
-          <div class="truncate text-sm font-medium text-foreground">{participant.displayName}</div>
+          <div class="truncate text-sm font-medium text-foreground">
+            {participant.displayName}
+          </div>
           {#if participant.connectionState !== 'connected'}
-            <div class="text-xs text-muted-foreground">{participant.connectionState}</div>
+            <div class="text-xs text-muted-foreground">
+              {participant.connectionState}
+            </div>
           {/if}
         </div>
         <div class="flex items-center gap-1.5">
@@ -207,7 +229,9 @@
               class="h-3.5 w-3.5 text-muted-foreground"
               aria-hidden="true"
             >
-              <path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5" />
+              <path
+                d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"
+              />
               <rect x="2" y="6" width="14" height="12" rx="2" />
             </svg>
           {:else}
@@ -222,8 +246,12 @@
               class="h-3.5 w-3.5 text-destructive"
               aria-hidden="true"
             >
-              <path d="M10.66 6H14a2 2 0 0 1 2 2v2.5l5.248-3.062A.5.5 0 0 1 22 7.87v8.196" />
-              <path d="M16 16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2" />
+              <path
+                d="M10.66 6H14a2 2 0 0 1 2 2v2.5l5.248-3.062A.5.5 0 0 1 22 7.87v8.196"
+              />
+              <path
+                d="M16 16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2"
+              />
               <line x1="2" x2="22" y1="2" y2="22" />
             </svg>
           {/if}

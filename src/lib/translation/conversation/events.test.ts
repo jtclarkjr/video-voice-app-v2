@@ -73,9 +73,9 @@ describe('translation conversation events', () => {
 
   it('detects backend error events', () => {
     expect(isConversationErrorEvent({ type: 'error' })).toBe(true)
-    expect(isConversationErrorEvent({ type: 'conversation.turn.completed' })).toBe(
-      false
-    )
+    expect(
+      isConversationErrorEvent({ type: 'conversation.turn.completed' })
+    ).toBe(false)
   })
 
   it('builds and completes chat turns from conversation deltas', () => {

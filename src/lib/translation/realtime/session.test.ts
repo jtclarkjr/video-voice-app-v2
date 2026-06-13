@@ -39,9 +39,11 @@ describe('live translation session', () => {
     })
     vi.stubGlobal(
       'RTCPeerConnection',
-      createMockPeerConnectionConstructor(peerConnections, [dataChannel], [
-        [remoteTrack]
-      ])
+      createMockPeerConnectionConstructor(
+        peerConnections,
+        [dataChannel],
+        [[remoteTrack]]
+      )
     )
     vi.stubGlobal(
       'fetch',

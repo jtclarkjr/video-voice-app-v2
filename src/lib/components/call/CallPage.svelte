@@ -65,7 +65,11 @@
     }
 
     if (typeof window !== 'undefined') {
-      window.history.replaceState(null, '', `/call/${encodeURIComponent(nextRoomId)}`)
+      window.history.replaceState(
+        null,
+        '',
+        `/call/${encodeURIComponent(nextRoomId)}`
+      )
     }
     joined = true
   }

@@ -1,6 +1,9 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { createActiveRoomsEventSource, fetchActiveRooms } from '$lib/rooms/client'
+  import {
+    createActiveRoomsEventSource,
+    fetchActiveRooms
+  } from '$lib/rooms/client'
   import { session } from '$lib/stores/session.svelte'
   import type { RoomInfo } from '$lib/rooms/client'
 
@@ -43,8 +46,12 @@
 
 <section class="grid gap-6">
   <div class="grid gap-4">
-    <p class="m-0 text-sm font-bold uppercase tracking-[0.2em] text-primary">Voice &amp; Video</p>
-    <h1 class="m-0 text-4xl leading-none font-semibold tracking-tight text-foreground sm:text-5xl">
+    <p class="m-0 text-sm font-bold uppercase tracking-[0.2em] text-primary">
+      Voice &amp; Video
+    </p>
+    <h1
+      class="m-0 text-4xl leading-none font-semibold tracking-tight text-foreground sm:text-5xl"
+    >
       Video Call
     </h1>
     <p class="m-0 max-w-3xl text-lg leading-8 text-muted-foreground">
@@ -54,7 +61,9 @@
 
   <div class="surface-card p-6">
     <div class="grid gap-6">
-      <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div
+        class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"
+      >
         <div class="grid gap-1">
           <h2 class="m-0 text-lg font-semibold">Active Rooms</h2>
           {#if !session.isPending && session.isAnonymous}
@@ -92,12 +101,19 @@
         <div class="grid gap-2" role="status" aria-label="Loading active rooms">
           <span class="sr-only">Loading active rooms…</span>
           {#each [1, 2, 3] as item}
-            <div class="h-14 animate-pulse rounded-xl bg-muted/50" aria-hidden="true"></div>
+            <div
+              class="h-14 animate-pulse rounded-xl bg-muted/50"
+              aria-hidden="true"
+            ></div>
           {/each}
         </div>
       {:else if rooms.length === 0}
-        <div class="rounded-xl border border-dashed border-border/70 px-6 py-10 text-center">
-          <p class="m-0 text-sm text-muted-foreground" role="status">No active rooms</p>
+        <div
+          class="rounded-xl border border-dashed border-border/70 px-6 py-10 text-center"
+        >
+          <p class="m-0 text-sm text-muted-foreground" role="status">
+            No active rooms
+          </p>
         </div>
       {:else}
         <div class="grid gap-2">
@@ -107,7 +123,9 @@
               class="flex items-center justify-between rounded-xl border border-border/70 bg-card/50 px-4 py-3 text-left transition-colors hover:bg-accent hover:text-accent-foreground"
             >
               <span class="font-medium">{room.id}</span>
-              <span class="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <span
+                class="flex items-center gap-1.5 text-sm text-muted-foreground"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"

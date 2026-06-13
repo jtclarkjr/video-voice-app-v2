@@ -50,7 +50,8 @@
   const tileClass = $derived(
     cn(
       'relative block aspect-video w-full min-w-0 overflow-hidden rounded-xl bg-muted text-left transition-shadow',
-      isSpeaking && 'ring-2 ring-green-500 shadow-[0_0_12px_rgba(34,197,94,0.3)]',
+      isSpeaking &&
+        'ring-2 ring-green-500 shadow-[0_0_12px_rgba(34,197,94,0.3)]',
       isPinned && 'ring-2 ring-primary',
       className
     )
@@ -63,12 +64,18 @@
     autoplay
     playsinline
     {muted}
-    class={cn('h-full w-full object-cover', mirrored && 'scale-x-[-1]', cameraOff && 'invisible')}
+    class={cn(
+      'h-full w-full object-cover',
+      mirrored && 'scale-x-[-1]',
+      cameraOff && 'invisible'
+    )}
     aria-label={`${label} video`}
   ></video>
 
   <span class="sr-only">
-    {isSpeaking ? `${label} is speaking. ` : ''}{cameraOff ? 'Camera off.' : 'Camera on.'}
+    {isSpeaking ? `${label} is speaking. ` : ''}{cameraOff
+      ? 'Camera off.'
+      : 'Camera on.'}
     Connection: {networkQuality}.
   </span>
 
@@ -82,8 +89,12 @@
     </div>
   {/if}
 
-  <div class="absolute bottom-2 left-2 flex max-w-[calc(100%-1rem)] items-center gap-1.5">
-    <span class="min-w-0 truncate rounded-md bg-black/60 px-2 py-1 text-xs text-white">{label}</span
+  <div
+    class="absolute bottom-2 left-2 flex max-w-[calc(100%-1rem)] items-center gap-1.5"
+  >
+    <span
+      class="min-w-0 truncate rounded-md bg-black/60 px-2 py-1 text-xs text-white"
+      >{label}</span
     >
     {#if qualityClass}
       <span
